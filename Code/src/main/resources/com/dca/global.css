@@ -1,0 +1,13 @@
+.root {
+    -fx-background-color: #90D7FF;
+    -fx-padding: 10pt;
+    -fx-spacing: 5pt;
+}
+
+
+
+.button {
+    -fx-background-color: #B8B3BE;
+    -fx-padding: 10pt;
+    -fx-border-radius: 10;
+}

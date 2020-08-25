@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="700.0" stylesheets="@global.css" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.dca.gui.MainPageController">
+    <children>
+        <Label text="Checkers" textOverrun="CLIP">
+            <font>
+                <Font name="Arial Unicode MS" size="80.0" />
+            </font>
+        </Label>
+        <Button fx:id="btn2Players" mnemonicParsing="false" onAction="#btn2Players_onAction" text="2 Giocatori" />
+        <Button fx:id="btn2Players1" mnemonicParsing="false" onAction="#btn2Players_onAction" text="Computer" />
+    </children>
+</VBox>
