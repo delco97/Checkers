@@ -1,8 +1,8 @@
-package com.dca.gui;
+package com.dca.checkers.gui;
 
 import java.io.IOException;
 
-import com.dca.App;
+import com.dca.checkers.App;
 import javafx.fxml.FXML;
 
 public class GameSettings {

@@ -1,4 +1,4 @@
-package com.dca;
+package com.dca.checkers;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
