@@ -32,10 +32,10 @@ public class Board {
 	public static final int EMPTY = 0b000;
 	
 	/** The ID of a white checker in the checker board. */
-	public static final int BLACK_CHECKER = 0b100; //4 * 1 + 2 * 1 + 1 * 0;
+	public static final int BLACK_CHECKER = 0b110; //4 * 1 + 2 * 1 + 1 * 0;
 	
 	/** The ID of a white checker in the checker board. */
-	public static final int WHITE_CHECKER = 0b101; //4 * 1 + 2 * 0 + 1 * 0;
+	public static final int WHITE_CHECKER = 0b100; //4 * 1 + 2 * 0 + 1 * 0;
 	
 	/** The ID of a black checker that is also a king. */
 	public static final int BLACK_KING = 0b111; //4 * 1 + 2 * 1 + 1 * 1;

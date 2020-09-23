@@ -112,7 +112,7 @@ public class Game {
 		if (midValid) {
 			this.skipIndex = endIndex;
 		}
-		if (!midValid || board.getSkips(endIndex).isEmpty()) {
+		if (!midValid || board.copy().getSkips(endIndex).isEmpty()) {
 			switchTurn = true;
 		}
 		if (switchTurn) {
