@@ -1,10 +1,9 @@
 
 package com.dca.checkers.model;
 
-import com.dca.checkers.logic.MoveGenerator;
-import com.dca.checkers.logic.MoveLogic;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -65,7 +64,7 @@ public class Game {
 	 * @param start	the start point for the move.
 	 * @param end	the end point for the move.
 	 * @return true if and only if an update was made to the game state.
-	 * @see {@link #move(int, int)}
+	 * @see #move(int, int)
 	 */
 	public boolean move(Point start, Point end) {
 		if (start == null || end == null) {
@@ -80,12 +79,12 @@ public class Game {
 	 * @param startIndex	the start index of the move.
 	 * @param endIndex		the end index of the move.
 	 * @return true if and only if an update was made to the game state.
-	 * @see {@link #move(Point, Point)}
+	 * @see #move(Point, Point)
 	 */
 	public boolean move(int startIndex, int endIndex) {
 		
 		// Validate the move
-		if (!MoveLogic.isValidMove(this, startIndex, endIndex)) {
+		if (!isValidMove(startIndex, endIndex)) {
 			return false;
 		}
 		
@@ -113,8 +112,7 @@ public class Game {
 		if (midValid) {
 			this.skipIndex = endIndex;
 		}
-		if (!midValid || MoveGenerator.getSkips(
-				board.copy(), endIndex).isEmpty()) {
+		if (!midValid || board.getSkips(endIndex).isEmpty()) {
 			switchTurn = true;
 		}
 		if (switchTurn) {
@@ -158,8 +156,7 @@ public class Game {
 		List<Point> test = isP1Turn? black : white;
 		for (Point p : test) {
 			int i = Board.toIndex(p);
-			if (!MoveGenerator.getMoves(board, i).isEmpty() ||
-					!MoveGenerator.getSkips(board, i).isEmpty()) {
+			if (!board.getMoves(i).isEmpty() || !board.getSkips(i).isEmpty()) {
 				return false;
 			}
 		}
@@ -168,12 +165,34 @@ public class Game {
 		return true;
 	}
 	
+	/**
+	 * Determines if the specified move is valid based on the rules of checkers.
+	 *
+	 * @param startIndex the start index of the move.
+	 * @param endIndex   the end index of the move.
+	 * @return true if the move is legal according to the rules of checkers.
+	 */
+	public boolean isValidMove(int startIndex, int endIndex) {
+		return board.isValidMove(isP1Turn(), startIndex, endIndex, getSkipIndex());
+	}
+	
 	public boolean isP1Turn() {
 		return isP1Turn;
 	}
 	
 	public void setP1Turn(boolean isP1Turn) {
 		this.isP1Turn = isP1Turn;
+	}
+	
+	/**
+	 * Gets a list of skip end-points for a given start index.
+	 *
+	 * @param startIndex the center index to look for skips around.
+	 * @return the list of points such that the start to a given point
+	 * represents a skip available.
+	 */
+	public List<Point> getSkips(int startIndex) {
+		return board.getSkips(startIndex);
 	}
 	
 	public int getSkipIndex() {
@@ -185,15 +204,16 @@ public class Game {
 	 * {@link #setGameState(String)}.
 	 * 
 	 * @return a string representing the current game state.
-	 * @see {@link #setGameState(String)}
+	 * @see #setGameState(String)
 	 */
 	public String getGameState() {
 		
 		// Add the game board
-		String state = "";
-		for (int i = 0; i < 32; i ++) {
-			state += "" + board.get(i);
+		StringBuilder stateBuilder = new StringBuilder();
+		for (int i = 0; i < 32; i++) {
+			stateBuilder.append(board.get(i));
 		}
+		String state = stateBuilder.toString();
 		
 		// Add the other info
 		state += (isP1Turn? "1" : "0");
@@ -205,9 +225,9 @@ public class Game {
 	/**
 	 * Parses a string representing a game state that was generated from
 	 * {@link #getGameState()}.
-	 * 
-	 * @param state	the game state.
-	 * @see {@link #getGameState()}
+	 *
+	 * @param state    the game state.
+	 * @see #getGameState()
 	 */
 	public void setGameState(String state) {
 		
@@ -224,7 +244,9 @@ public class Game {
 			try {
 				int id = Integer.parseInt("" + state.charAt(i));
 				this.board.set(i, id);
-			} catch (NumberFormatException e) {}
+			} catch (NumberFormatException e) {
+				System.err.println("Impossible to parse character: " + i);
+			}
 		}
 		
 		// Update the other info

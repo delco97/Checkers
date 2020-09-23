@@ -1,9 +1,6 @@
 
 package com.dca.checkers.model;
 
-import com.dca.checkers.logic.MoveGenerator;
-import com.dca.checkers.logic.MoveLogic;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,28 +59,26 @@ public class ComputerPlayer extends Player {
 		List<Move> moves = getMoves(copy);
 
 		// Determine which one is the best
-		int n = moves.size(), count = 1;
+		int count = 1;
 		double bestWeight = Move.WEIGHT_INVALID;
-		for (int i = 0; i < n; i ++) {
-			Move m = moves.get(i);
+		for (Move m : moves) {
 			getMoveWeight(copy.copy(), m);
 			if (m.getWeight() > bestWeight) {
 				count = 1;
 				bestWeight = m.getWeight();
 			} else if (m.getWeight() == bestWeight) {
-				count ++;
+				count++;
 			}
 		}
 
 		// Randomly select a move
 		int move = ((int) (Math.random() * count)) % count;
-		for (int i = 0; i < n; i ++) {
-			Move m = moves.get(i);
+		for (Move m : moves) {
 			if (bestWeight == m.getWeight()) {
 				if (move == 0) {
 					game.move(m.getStartIndex(), m.getEndIndex());
 				} else {
-					move --;
+					move--;
 				}
 			}
 		}
@@ -101,8 +96,7 @@ public class ComputerPlayer extends Player {
 		if (game.getSkipIndex() >= 0) {
 			
 			List<Move> moves = new ArrayList<>();
-			List<Point> skips = MoveGenerator.getSkips(game.getBoard(),
-					game.getSkipIndex());
+			List<Point> skips = game.getSkips(game.getSkipIndex());
 			for (Point end : skips) {
 				moves.add(new Move(game.getSkipIndex(), Board.toIndex(end)));
 			}
@@ -125,7 +119,7 @@ public class ComputerPlayer extends Player {
 		List<Move> moves = new ArrayList<>();
 		for (Point checker : checkers) {
 			int index = Board.toIndex(checker);
-			List<Point> skips = MoveGenerator.getSkips(b, index);
+			List<Point> skips = game.getSkips(index);
 			for (Point end : skips) {
 				Move m = new Move(index, Board.toIndex(end));
 				m.changeWeight(WEIGHT_SKIP);
@@ -137,7 +131,7 @@ public class ComputerPlayer extends Player {
 		if (moves.isEmpty()) {
 			for (Point checker : checkers) {
 				int index = Board.toIndex(checker);
-				List<Point> movesEnds = MoveGenerator.getMoves(b, index);
+				List<Point> movesEnds = b.getMoves(index);
 				for (Point end : movesEnds) {
 					moves.add(new Move(index, Board.toIndex(end)));
 				}
@@ -164,7 +158,7 @@ public class ComputerPlayer extends Player {
 		}
 		
 		// Recursively get the depth
-		List<Point> skips = MoveGenerator.getSkips(game.getBoard(), startIndex);
+		List<Point> skips = game.getSkips(startIndex);
 		int depth = 0;
 		for (Point end : skips) {
 			int endIndex = Board.toIndex(end);
@@ -192,9 +186,9 @@ public class ComputerPlayer extends Player {
 		int startIndex = Board.toIndex(start), endIndex = Board.toIndex(end);
 		Board b = game.getBoard();
 		boolean changed = game.isP1Turn();
-		boolean safeBefore = MoveLogic.isSafe(b, start);
+		boolean safeBefore = b.isSafe(start);
 		int id = b.get(startIndex);
-		boolean isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
+		boolean isKing;
 		
 		// Set the initial weight
 		m.changeWeight(getSafetyWeight(b, game.isP1Turn()));
@@ -212,7 +206,7 @@ public class ComputerPlayer extends Player {
 		
 		// Determine if a skip could be made on next move
 		if (changed) {
-			safeAfter = MoveLogic.isSafe(b, end);
+			safeAfter = b.isSafe(end);
 			int depth = getSkipDepth(game, endIndex, !game.isP1Turn());
 			if (safeAfter) {
 				m.changeWeight(SKIP_ON_NEXT * depth * depth);
@@ -237,8 +231,7 @@ public class ComputerPlayer extends Player {
 		} else {
 			m.changeWeight(UNSAFE_UNSAFE);
 		}
-		m.changeWeight(getSafetyWeight(b,
-				changed? !game.isP1Turn() : game.isP1Turn()));
+		m.changeWeight(getSafetyWeight(b, changed != game.isP1Turn()));
 	}
 	
 	/**
@@ -268,7 +261,7 @@ public class ComputerPlayer extends Player {
 			int index = Board.toIndex(checker);
 			int id = b.get(index);
 			boolean isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
-			if (MoveLogic.isSafe(b, checker)) {
+			if (b.isSafe(checker)) {
 				weight += SAFE;
 			} else {
 				weight += UNSAFE * (isKing? KING_FACTOR : 1);

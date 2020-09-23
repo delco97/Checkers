@@ -2,7 +2,6 @@
 
 package com.dca.checkers.ui;
 
-import com.dca.checkers.logic.MoveGenerator;
 import com.dca.checkers.model.*;
 
 
@@ -10,7 +9,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -104,14 +102,10 @@ public class CheckerBoard extends JButton {
 		
 		
 		// Set a timer to run
-		this.timer = new Timer(TIMER_DELAY, new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				getCurrentPlayer().updateGame(game);
-				timer.stop();
-				update();
-			}
+		this.timer = new Timer(TIMER_DELAY, e -> {
+			getCurrentPlayer().updateGame(game);
+			timer.stop();
+			update();
 		});
 		this.timer.start();
 	}
@@ -362,8 +356,7 @@ public class CheckerBoard extends JButton {
 			boolean change = copy.isP1Turn();
 			String expected = copy.getGameState();
 			boolean move = copy.move(selected, sel);
-			boolean updated = (move?
-					setGameState(true, copy.getGameState(), expected) : false);
+			boolean updated = (move && setGameState(true, copy.getGameState(), expected));
 			change = (copy.isP1Turn() != change);
 			this.selected = change? null : sel;
 		} else {
@@ -396,9 +389,9 @@ public class CheckerBoard extends JButton {
 		} else if(isP1Turn ^ (id == Board.BLACK_CHECKER ||
 				id == Board.BLACK_KING)) { // wrong checker
 			return false;
-		} else if (!MoveGenerator.getSkips(b, i).isEmpty()) { // skip available
+		} else if (!b.getSkips(i).isEmpty()) { // skip available
 			return true;
-		} else if (MoveGenerator.getMoves(b, i).isEmpty()) { // no moves
+		} else if (b.getMoves(i).isEmpty()) { // no moves
 			return false;
 		}
 		
@@ -412,7 +405,7 @@ public class CheckerBoard extends JButton {
 			if (checker == i) {
 				continue;
 			}
-			if (!MoveGenerator.getSkips(b, checker).isEmpty()) {
+			if (!b.getSkips(checker).isEmpty()) {
 				return false;
 			}
 		}
