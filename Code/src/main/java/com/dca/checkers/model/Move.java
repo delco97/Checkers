@@ -3,6 +3,7 @@
 package com.dca.checkers.model;
 
 import java.awt.*;
+import java.util.Objects;
 
 /**
  * The {@code Move} class represents a move and contains a weight associated
@@ -19,17 +20,22 @@ public class Move {
 	/** The end index of the move. */
 	private byte endIndex;
 	
+	/** The move type */
+	private MoveType type;
+	
 	/** The weight associated with the move. */
 	private double weight;
 	
-	public Move(int startIndex, int endIndex) {
+	public Move(int startIndex, int endIndex, MoveType type) {
 		setStartIndex(startIndex);
 		setEndIndex(endIndex);
+		this.type = type;
 	}
 	
-	public Move(Point start, Point end) {
+	public Move(Point start, Point end, MoveType type) {
 		setStartIndex(Board.toIndex(start));
 		setEndIndex(Board.toIndex(end));
+		this.type = type;
 	}
 	
 	public int getStartIndex() {
@@ -47,6 +53,10 @@ public class Move {
 	public void setEndIndex(int endIndex) {
 		this.endIndex = (byte) endIndex;
 	}
+	
+	public MoveType getType() { return type; }
+	
+	public void setType(MoveType type) { this.type = type; }
 	
 	public Point getStart() {
 		return Board.toPoint(startIndex);
@@ -74,6 +84,19 @@ public class Move {
 	
 	public void changeWeight(double delta) {
 		this.weight += delta;
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Move move = (Move) o;
+		return startIndex == move.startIndex && endIndex == move.endIndex;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(startIndex, endIndex);
 	}
 	
 	@Override

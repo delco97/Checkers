@@ -6,7 +6,8 @@
 
 package com.dca.checkers.ui;
 
-import com.dca.checkers.model.ComputerPlayer;
+import com.dca.checkers.ai.AIMinMax;
+import com.dca.checkers.ai.AIStupidPlayer;
 import com.dca.checkers.model.HumanPlayer;
 import com.dca.checkers.model.Player;
 
@@ -47,7 +48,7 @@ public class OptionPanel extends JPanel {
 		
 		// Initialize the components
 		OptionListener ol = new OptionListener();
-		final String[] playerTypeOpts = {"Human", "Computer"};
+		final String[] playerTypeOpts = {"Human", "AI - Empirica", "AI - MinMax"};
 		this.restartBtn = new JButton("Restart");
 		this.player1Opts = new JComboBox<>(playerTypeOpts);
 		this.player2Opts = new JComboBox<>(playerTypeOpts);
@@ -58,11 +59,24 @@ public class OptionPanel extends JPanel {
 		JPanel middle = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
+		top.setBackground(new Color(231, 187, 134));
+		middle.setBackground(new Color(231, 187, 134));
+		bottom.setBackground(new Color(231, 187, 134));
+		
+		
 		// Add components to the layout
 		top.add(restartBtn);
-		middle.add(new JLabel("(black) Player 1: "));
+		JLabel txtP1 = new JLabel("Player 1: ");
+		txtP1.setOpaque(true);
+		txtP1.setBackground(Color.BLACK);
+		txtP1.setForeground(Color.WHITE);
+		middle.add(txtP1);
 		middle.add(player1Opts);
-		bottom.add(new JLabel("(white) Player 2: "));
+		JLabel txtP2 = new JLabel("Player 2: ");
+		txtP2.setOpaque(true);
+		txtP2.setBackground(Color.WHITE);
+		txtP2.setForeground(Color.BLACK);
+		bottom.add(txtP2);
 		bottom.add(player2Opts);
 		this.add(top);
 		this.add(middle);
@@ -95,8 +109,11 @@ public class OptionPanel extends JPanel {
 		
 		// Determine the type
 		String type = "" + playerOpts.getSelectedItem();
-		if (type.equals("Computer")) {
-			player = new ComputerPlayer();
+		if (type.equals("AI - Empirica")) {
+			player = new AIStupidPlayer();
+		}
+		if (type.equals("AI - MinMax")) {
+			player = new AIMinMax();
 		}
 		
 		return player;

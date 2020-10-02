@@ -58,6 +58,9 @@ public class CheckerBoard extends JButton {
 	/** A convenience flag to check if the game is over. */
 	private boolean isGameOver;
 	
+	/** Match result */
+	private MatchResult result;
+	
 	/** The timer to control how fast a computer player makes a move. */
 	private Timer timer;
 	
@@ -77,8 +80,8 @@ public class CheckerBoard extends JButton {
 		
 		// Setup the game
 		this.game = (game == null)? new Game() : game;
-		this.lightTile = Color.WHITE;
-		this.darkTile = Color.BLACK;
+		this.lightTile = new Color(254, 234, 184);
+		this.darkTile = new Color(79, 124, 38);
 		this.window = window;
 		setPlayer1(player1);
 		setPlayer2(player2);
@@ -89,7 +92,8 @@ public class CheckerBoard extends JButton {
 	 */
 	public void update() {
 		runPlayer();
-		this.isGameOver = game.isGameOver();
+		result = game.getResult();
+		this.isGameOver = result != MatchResult.UNKNOWN;
 		repaint();
 	}
 	
@@ -234,9 +238,10 @@ public class CheckerBoard extends JButton {
 				
 				// Any king (add some extra highlights)
 				if (id == Board.BLACK_KING || id == Board.WHITE_KING) {
-					g.setColor(new Color(255, 240,0));
+					g.setColor(new Color(255, 63, 43));
 					g.drawOval(cx - 1, cy - 2, CHECKER_SIZE, CHECKER_SIZE);
 					g.drawOval(cx + 1, cy, CHECKER_SIZE - 4, CHECKER_SIZE - 4);
+					g.drawString("K",cx+10, cy+15);
 				}
 			}
 		}
@@ -255,7 +260,21 @@ public class CheckerBoard extends JButton {
 		// Draw a game over sign
 		if (isGameOver) {
 			g.setFont(new Font("Arial", Font.BOLD, 20));
-			msg = "Game Over!";
+			switch (result) {
+				case P1_WIN:
+					msg = "Player 1 WIN!";
+					break;
+				case P2_WIN:
+					msg = "Player 2 WIN!";
+					break;
+				case DRAW:
+					msg = "DRAW!";
+					break;
+				default:
+					msg = "UNKOWN RESULT";
+			}
+			
+			
 			width = g.getFontMetrics().stringWidth(msg);
 			g.setColor(new Color(240, 240, 255));
 			g.fillRoundRect(W / 2 - width / 2 - 5,
@@ -389,9 +408,9 @@ public class CheckerBoard extends JButton {
 		} else if(isP1Turn ^ (id == Board.BLACK_CHECKER ||
 				id == Board.BLACK_KING)) { // wrong checker
 			return false;
-		} else if (!b.getSkips(i).isEmpty()) { // skip available
+		} else if (!b.getPieceSkips(i).isEmpty()) { // skip available
 			return true;
-		} else if (b.getMoves(i).isEmpty()) { // no moves
+		} else if (b.getPieceMoves(i).isEmpty()) { // no moves
 			return false;
 		}
 		
@@ -405,7 +424,7 @@ public class CheckerBoard extends JButton {
 			if (checker == i) {
 				continue;
 			}
-			if (!b.getSkips(checker).isEmpty()) {
+			if (!b.getPieceSkips(checker).isEmpty()) {
 				return false;
 			}
 		}

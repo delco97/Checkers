@@ -42,7 +42,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.1</version>
                 <configuration>
-                    <mainClass>com.dca.checkers.App</mainClass>
+                    <mainClass>com.dca.checkers.Main</mainClass>
                 </configuration>
             </plugin>
         </plugins>

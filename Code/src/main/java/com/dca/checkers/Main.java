@@ -1,5 +1,7 @@
 
-package com.dca.checkers.ui;
+package com.dca.checkers;
+
+import com.dca.checkers.ui.CheckersWindow;
 
 import javax.swing.*;
 

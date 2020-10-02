@@ -24,6 +24,11 @@ import java.util.List;
  * be reset with {@link #reset()}.
  */
 public class Board {
+	/** Number of rows */
+	private final int nRows = 8;
+	
+	/** Number of columns */
+	private final int nCols = 8;
 	
 	/** An ID indicating a point was not on the checker board. */
 	public static final int INVALID = -1;
@@ -374,33 +379,6 @@ public class Board {
 		
 	}
 	
-	/**
-	 * Determines if the specified move is valid based on the rules of checkers.
-	 *
-	 * @param isP1Turn   the flag indicating if it is player 1's turn.
-	 * @param startIndex the start index of the move.
-	 * @param endIndex   the end index of the move.
-	 * @param skipIndex  the index of the last skip this turn.
-	 * @return true if the move is legal according to the rules of checkers.
-	 */
-	public boolean isValidMove(boolean isP1Turn, int startIndex, int endIndex, int skipIndex) {
-		
-		// Basic checks
-		if (!Board.isValidIndex(startIndex) || !Board.isValidIndex(endIndex)) {
-			return false;
-		} else if (startIndex == endIndex) {
-			return false;
-		} else if (Board.isValidIndex(skipIndex) && skipIndex != startIndex) {
-			return false;
-		}
-		
-		// Perform the tests to validate the move
-		if (!validateIDs(isP1Turn, startIndex, endIndex)) {
-			return false;
-		} else return validateDistance(isP1Turn, startIndex, endIndex);
-		
-		// Passed all tests
-	}
 	
 	/**
 	 * Validates all ID related values for the start, end, and middle (if the
@@ -477,7 +455,7 @@ public class Board {
 			// Check if any of them have a skip available
 			for (Point p : checkers) {
 				int index = Board.toIndex(p);
-				if (!getSkips(index).isEmpty()) {
+				if (!getPieceSkips(index).isEmpty()) {
 					return false;
 				}
 			}
@@ -550,10 +528,10 @@ public class Board {
 	 * @param start the center index to look for moves around.
 	 * @return the list of points such that the start to a given point
 	 * represents a move available.
-	 * @see #getMoves(int)
+	 * @see #getPieceMoves(int)
 	 */
-	public List<Point> getMoves(Point start) {
-		return getMoves(Board.toIndex(start));
+	public List<Point> getPieceMoves(Point start) {
+		return getPieceMoves(Board.toIndex(start));
 	}
 	
 	/**
@@ -562,9 +540,9 @@ public class Board {
 	 * @param startIndex the center index to look for moves around.
 	 * @return the list of points such that the start to a given point
 	 * represents a move available.
-	 * @see #getMoves(Point)
+	 * @see #getPieceMoves(Point)
 	 */
-	public List<Point> getMoves(int startIndex) {
+	public List<Point> getPieceMoves(int startIndex) {
 		
 		// Trivial cases
 		List<Point> endPoints = new ArrayList<>();
@@ -594,10 +572,10 @@ public class Board {
 	 * @param start the center index to look for skips around.
 	 * @return the list of points such that the start to a given point
 	 * represents a skip available.
-	 * @see #getSkips(int)
+	 * @see #getPieceSkips(int)
 	 */
-	public List<Point> getSkips(Point start) {
-		return getSkips(Board.toIndex(start));
+	public List<Point> getPieceSkips(Point start) {
+		return getPieceSkips(Board.toIndex(start));
 	}
 	
 	/**
@@ -606,9 +584,9 @@ public class Board {
 	 * @param startIndex the center index to look for skips around.
 	 * @return the list of points such that the start to a given point
 	 * represents a skip available.
-	 * @see #getSkips(Point)
+	 * @see #getPieceSkips(Point)
 	 */
-	public List<Point> getSkips(int startIndex) {
+	public List<Point> getPieceSkips(int startIndex) {
 		
 		// Trivial cases
 		List<Point> endPoints = new ArrayList<>();
@@ -630,6 +608,8 @@ public class Board {
 				endPoints.remove(i--);
 			}
 		}
+		
+		
 		
 		return endPoints;
 	}
@@ -664,6 +644,8 @@ public class Board {
 		
 		//Check that skip is not performed by a normal checkers versus a king
 		return (id != Board.WHITE_CHECKER || midID != Board.BLACK_KING) && (id != Board.BLACK_CHECKER || midID != Board.WHITE_KING);
+		//TODO: add ita checks
+		//
 		
 	}
 	
@@ -701,5 +683,13 @@ public class Board {
 		obj += get(31);
 		
 		return obj + "]";
+	}
+	
+	public int getRows() {
+		return nRows;
+	}
+	
+	public int getCols() {
+		return nCols;
 	}
 }

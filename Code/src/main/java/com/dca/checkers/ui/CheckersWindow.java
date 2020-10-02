@@ -53,6 +53,7 @@ public class CheckersWindow extends JFrame {
 		this.opts = new OptionPanel(this);
 		layout.add(board, BorderLayout.CENTER);
 		layout.add(opts, BorderLayout.SOUTH);
+		layout.setBackground(new Color(231, 187, 134));
 		this.add(layout);
 	}
 	

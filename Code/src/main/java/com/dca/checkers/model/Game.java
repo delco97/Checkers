@@ -2,16 +2,21 @@
 package com.dca.checkers.model;
 
 
+import com.dca.checkers.ai.State;
+
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The {@code Game} class represents a game of checkers and ensures that all
  * moves made are valid as per the rules of checkers.
  */
-public class Game {
+public class Game implements State {
 
+	
 	/** The current state of the checker board. */
 	private Board board;
 	
@@ -20,6 +25,36 @@ public class Game {
 	
 	/** The index of the last skip, to allow for multiple skips in a turn. */
 	private int skipIndex;
+	
+	/* ----- WEIGHTS ----- */
+	/** The weight of being able to skip. */
+	private static final double WEIGHT_SKIP = 25;
+	
+	/** The weight of being able to skip on next turn. */
+	private static final double SKIP_ON_NEXT = 20;
+	
+	/** The weight associated with being safe then safe before and after. */
+	private static final double SAFE_SAFE = 5;
+	
+	/** The weight associated with being safe then unsafe before and after. */
+	private static final double SAFE_UNSAFE = -40;
+	
+	/** The weight associated with being unsafe then safe before and after. */
+	private static final double UNSAFE_SAFE = 40;
+	
+	/** The weight associated with being unsafe then unsafe before and after. */
+	private static final double UNSAFE_UNSAFE = -40;
+	
+	/** The weight of a checker being safe. */
+	private static final double SAFE = 3;
+	
+	/** The weight of a checker being unsafe. */
+	private static final double UNSAFE = -5;
+	
+	/** The factor used to multiply some weights when the checker being
+	 * observed is a king. */
+	private static final double KING_FACTOR = 2;
+	/* ------------ */
 	
 	public Game() {
 		restart();
@@ -112,7 +147,7 @@ public class Game {
 		if (midValid) {
 			this.skipIndex = endIndex;
 		}
-		if (!midValid || board.copy().getSkips(endIndex).isEmpty()) {
+		if (!midValid || board.copy().getPieceSkips(endIndex).isEmpty()) {
 			switchTurn = true;
 		}
 		if (switchTurn) {
@@ -133,36 +168,62 @@ public class Game {
 	}
 	
 	/**
-	 * Determines if the game is over. The game is over if one or both players
-	 * cannot make a single move during their turn.
+	 * Determines if the game is over.
 	 * 
 	 * @return true if the game is over.
 	 */
 	public boolean isGameOver() {
-
+		return getResult() != MatchResult.UNKNOWN;
+	}
+	
+	/**
+	 * Get the current game result.
+	 */
+	public MatchResult getResult() {
 		// Ensure there is at least one of each checker
 		List<Point> black = board.find(Board.BLACK_CHECKER);
 		black.addAll(board.find(Board.BLACK_KING));
-		if (black.isEmpty()) {
-			return true;
-		}
+
 		List<Point> white = board.find(Board.WHITE_CHECKER);
 		white.addAll(board.find(Board.WHITE_KING));
-		if (white.isEmpty()) {
-			return true;
-		}
 		
-		// Check that the current player can move
-		List<Point> test = isP1Turn? black : white;
-		for (Point p : test) {
-			int i = Board.toIndex(p);
-			if (!board.getMoves(i).isEmpty() || !board.getSkips(i).isEmpty()) {
-				return false;
-			}
-		}
+		if (white.isEmpty() && black.isEmpty())
+			return MatchResult.UNKNOWN;
 		
-		// No moves
-		return true;
+		//Now on, at least one of two player must have at least one piece
+		
+		if(white.isEmpty())
+			return  MatchResult.P2_WIN;
+		
+		if(black.isEmpty())
+			return  MatchResult.P1_WIN;
+		
+		//Both the player have at least one piece
+		
+		// If the current player can move => game is NOT over
+		if(currentPlayerCanMove())  return MatchResult.UNKNOWN;
+		
+		
+		// Current players has no moves => Opponent wins
+		return isP1Turn ? MatchResult.P2_WIN:MatchResult.P1_WIN;
+	}
+	
+	/**
+	 * Check if the current player can move. I other words, he must have at least one piece on the board
+	 * and at least one of them must have one possible move.
+	 * @return true if the current player can move: false othrwise.
+	 */
+	private boolean currentPlayerCanMove() {
+		return !getAllMoves().isEmpty();
+//		//Get current player pieces
+//		List<Point> pieces = getPlayerPieces(isP1Turn);
+//
+//		for (Point p : pieces) {
+//			int i = Board.toIndex(p);
+//			if (!board.getPieceMoves(i).isEmpty() || !board.getPieceSkips(i).isEmpty())
+//				return true;
+//		}
+//		return false;
 	}
 	
 	/**
@@ -173,7 +234,12 @@ public class Game {
 	 * @return true if the move is legal according to the rules of checkers.
 	 */
 	public boolean isValidMove(int startIndex, int endIndex) {
-		return board.isValidMove(isP1Turn(), startIndex, endIndex, getSkipIndex());
+		List<Move> allMoves = getAllMoves();
+		for (Move m : allMoves)
+			if(m.getStartIndex() == startIndex && m.getEndIndex() == endIndex) return true;
+		
+		return false;
+		//return board.isValidMove(isP1Turn(), startIndex, endIndex, getSkipIndex());
 	}
 	
 	public boolean isP1Turn() {
@@ -185,6 +251,191 @@ public class Game {
 	}
 	
 	/**
+	 * Gets all the available moves and skips for the current player.
+	 *
+	 * @return a list of valid moves that the player can make.
+	 */
+	public List<Move> getAllMoves() {
+		
+		// The next move needs to be a skip
+		if (getSkipIndex() >= 0) {
+			
+			List<Move> moves = new ArrayList<>();
+			List<Point> skips = getSkips(getSkipIndex());
+			for (Point end : skips) {
+				moves.add(new Move(getSkipIndex(), Board.toIndex(end), MoveType.SKIP));
+			}
+			
+			return moves;
+		}
+		
+		// Get the checkers
+		List<Point> checkers = new ArrayList<>();
+		Board b = getBoard();
+		if (isP1Turn()) {
+			checkers.addAll(b.find(Board.BLACK_CHECKER));
+			checkers.addAll(b.find(Board.BLACK_KING));
+		} else {
+			checkers.addAll(b.find(Board.WHITE_CHECKER));
+			checkers.addAll(b.find(Board.WHITE_KING));
+		}
+		
+		// Determine if there are any skips
+		List<Move> moves = new ArrayList<>();
+		for (Point checker : checkers) {
+			int index = Board.toIndex(checker);
+			List<Point> skips = getSkips(index);
+			for (Point end : skips) {
+				Move m = new Move(index, Board.toIndex(end), MoveType.SKIP);
+				moves.add(m);
+			}
+		}
+		
+		if (moves.isEmpty()) { //No skips found
+			// There are no skips, add the regular moves
+			for (Point checker : checkers) {
+				int index = Board.toIndex(checker);
+				List<Point> movesEnds = b.getPieceMoves(index);
+				for (Point end : movesEnds) {
+					moves.add(new Move(index, Board.toIndex(end), MoveType.NORMAL));
+				}
+			}
+		}
+		
+		return moves;
+	}
+	
+	/**
+	 * Determines the weight of a move based on a number of factors (e.g. how
+	 * safe the checker is before/after, whether it can take an opponents
+	 * checker after, etc).
+	 *
+	 * @param m		the move to test.
+	 * @return the weight corresponding to move m.
+	 */
+	public double getMoveWeight(Move m) {
+		double w = 0; //weight calculated
+		Point start = m.getStart(), end = m.getEnd();
+		int startIndex = Board.toIndex(start), endIndex = Board.toIndex(end);
+		Board b = getBoard();
+		boolean changed = isP1Turn();
+		boolean safeBefore = b.isSafe(start);
+		int id = b.get(startIndex);
+		boolean isKing;
+		
+		// Set the initial weight
+		if(m.getType() == MoveType.SKIP) w += WEIGHT_SKIP;
+		w += (getSafetyWeight(isP1Turn()));
+		
+		// Make the move
+		if (!move(m.getStartIndex(), m.getEndIndex())) {
+			return Move.WEIGHT_INVALID;
+		}
+		b = getBoard();
+		changed = (changed != isP1Turn());
+		id = b.get(endIndex);
+		isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
+		boolean safeAfter = true;
+		
+		// Determine if a skip could be made on next move
+		if (changed) {
+			safeAfter = b.isSafe(end);
+			int depth = getSkipDepth(endIndex, !isP1Turn());
+			if (safeAfter) {
+				w += (SKIP_ON_NEXT * depth * depth);
+			} else {
+				w += (SKIP_ON_NEXT);
+			}
+		}
+		
+		// Check how many more skips are available
+		else {
+			int depth = getSkipDepth(startIndex, isP1Turn());
+			w += (WEIGHT_SKIP * depth * depth);
+		}
+		
+		// Add the weight appropriate to how safe the checker is
+		if (safeBefore && safeAfter) {
+			w += (SAFE_SAFE);
+		} else if (!safeBefore && safeAfter) {
+			w += (UNSAFE_SAFE);
+		} else if (safeBefore && !safeAfter) {
+			w += (SAFE_UNSAFE * (isKing? KING_FACTOR : 1));
+		} else {
+			w += (UNSAFE_UNSAFE);
+		}
+		w += (getSafetyWeight(changed != isP1Turn()));
+		
+		return w;
+	}
+	
+	/**
+	 * Calculates the 'safety' state of the game for the player specified. The
+	 * player has 'safe' and 'unsafe' checkers, which respectively, cannot and
+	 * can be skipped by the opponent in the next turn.
+	 *
+	 * @param isBlack	the flag indicating if black checkers should be observed.
+	 * @return the weight corresponding to how safe the player's checkers are.
+	 */
+	public double getSafetyWeight(boolean isBlack) {
+		
+		// Get the checkers
+		double weight = 0;
+		List<Point> checkers = new ArrayList<>();
+		if (isBlack) {
+			checkers.addAll(board.find(Board.BLACK_CHECKER));
+			checkers.addAll(board.find(Board.BLACK_KING));
+		} else {
+			checkers.addAll(board.find(Board.WHITE_CHECKER));
+			checkers.addAll(board.find(Board.WHITE_KING));
+		}
+		
+		// Determine conditions for each checker
+		for (Point checker : checkers) {
+			int index = Board.toIndex(checker);
+			int id = board.get(index);
+			boolean isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
+			if (board.isSafe(checker)) {
+				weight += SAFE;
+			} else {
+				weight += UNSAFE * (isKing? KING_FACTOR : 1);
+			}
+		}
+		
+		return weight;
+	}
+	
+	/**
+	 * Gets the number of skips that can be made in one turn from a given start
+	 * index.
+	 *
+	 * @param startIndex	the start index of the skips.
+	 * @param isP1Turn		the original player turn flag.
+	 * @return the maximum number of skips available from the given point.
+	 */
+	private int getSkipDepth(int startIndex, boolean isP1Turn) {
+		
+		// Trivial case
+		if (isP1Turn != isP1Turn()) {
+			return 0;
+		}
+		
+		// Recursively get the depth
+		List<Point> skips = getSkips(startIndex);
+		int depth = 0;
+		for (Point end : skips) {
+			int endIndex = Board.toIndex(end);
+			move(startIndex, endIndex);
+			int testDepth = getSkipDepth(endIndex, isP1Turn);
+			if (testDepth > depth) {
+				depth = testDepth;
+			}
+		}
+		
+		return depth + (skips.isEmpty()? 0 : 1);
+	}
+	
+	/**
 	 * Gets a list of skip end-points for a given start index.
 	 *
 	 * @param startIndex the center index to look for skips around.
@@ -192,7 +443,7 @@ public class Game {
 	 * represents a skip available.
 	 */
 	public List<Point> getSkips(int startIndex) {
-		return board.getSkips(startIndex);
+		return board.getPieceSkips(startIndex);
 	}
 	
 	public int getSkipIndex() {
@@ -261,4 +512,148 @@ public class Game {
 			}
 		}
 	}
+	
+	/**
+	 * Static evaluation of the current state for the current player perspective.
+	 */
+	@Override
+	public double value(boolean evalForP1) {
+		//Game is not over
+		if(isEndingPhase())
+			return endStateValue1(evalForP1);
+		else
+			return stateValue1(evalForP1);
+	}
+	
+	/**
+	 * Tell if the game is going to end soon.
+	 * In others words, it tells if on the board are present only kings.
+	 * @return true if the game is ending; false otherwise.
+	 */
+	private boolean isEndingPhase() {
+		List <Point> checkers;
+		checkers = board.find(Board.BLACK_CHECKER);
+		if(checkers.size() > 0) return false;
+		checkers = board.find(Board.WHITE_CHECKER);
+		if(checkers.size() > 0) return false;
+		return true;
+	}
+	
+	/**
+	 * Counts the value of player's pieces and subtracts from it
+	 * the value of opponent’s pieces.
+	 * @param evalForP1 flag that tells if current game state must be evaluated for player 1 (true) or player 2 (false).
+	 * @return current state game value for player 1 or player 2.
+	 */
+	private double stateValue1(boolean evalForP1) {
+		double value = 0;
+		final double W_CHECKER = 1;
+		final double W_KING = 2;
+		
+		if(evalForP1) {
+			//Number of pieces
+			value += board.find(Board.BLACK_CHECKER).size() * W_CHECKER;
+			value += board.find(Board.BLACK_KING).size() * W_KING;
+			value -= board.find(Board.WHITE_CHECKER).size() * W_CHECKER;
+			value -= board.find(Board.WHITE_KING).size() * W_KING;
+		} else {//Eval for P2
+			value += board.find(Board.WHITE_CHECKER).size() * W_CHECKER;
+			value += board.find(Board.WHITE_KING).size() * W_KING;
+			value -= board.find(Board.BLACK_CHECKER).size() * W_CHECKER;
+			value -= board.find(Board.BLACK_KING).size() * W_KING;
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * Advanced pawns are more threatening than pawns that are on the back of the board.
+	 * Therefore, since advanced pawns are much closer to become Kings, they got extra value.
+	 * Of course, kings are still evaluated more than any pawn.
+	 *
+	 * @param evalForP1 flag that tells if current game state must be evaluated for player 1 (true) or player 2 (false).
+	 * @return current state game value for player 1 or player 2.
+	 */
+	private double stateValue2(boolean evalForP1) {
+		double value = 0;
+		final double W_CHECKER_PLAYER_SIDE = 5;
+		final double W_CHECKER_OPPONENT_SIDE = 7;
+		final double W_KING = 10;
+		List<Point> kings;
+		List<Point> checkers;
+		int countPlayerSides = 0;
+		int countOpponentSide = 0;
+		
+		if(evalForP1) {
+			kings = board.find(Board.BLACK_KING);
+			value = kings.size() * W_KING;
+			checkers = board.find(Board.BLACK_CHECKER);
+			
+			for (Point p : checkers) {
+				if(Board.toIndex(p) >= 16)
+					countOpponentSide++;
+				else
+					countPlayerSides++;
+			}
+			value += countOpponentSide * W_CHECKER_OPPONENT_SIDE;
+			value += countPlayerSides * W_CHECKER_PLAYER_SIDE;
+		} else {//Eval for P2
+			kings = board.find(Board.WHITE_KING);
+			value = kings.size() * W_KING;
+			checkers = board.find(Board.WHITE_CHECKER);
+			for (Point p : checkers) {
+				if(Board.toIndex(p) < 16) countOpponentSide++;
+				else  countPlayerSides++;
+			}
+			value += countOpponentSide * W_CHECKER_OPPONENT_SIDE;
+			value += countPlayerSides * W_CHECKER_PLAYER_SIDE;
+		}
+		
+		return value;
+	}
+	
+	/**
+	 * For each piece (king) of the player we sum all the distances between it and all the opponent’s pieces. If the
+	 * player has more kings than the opponent will prefer a game position that minimizes this sum (he wants to
+	 * attack), otherwise he will prefer this sum to be as big as possible (run away).
+	 *
+	 * @param evalForP1 flag that tells if current game state must be evaluated for player 1 (true) or player 2 (false).
+	 * @return current state game value for player 1 or player 2.
+	 */
+	private double endStateValue1(boolean evalForP1) {
+		//Get pieces
+		List<Point> playerPieces = getPlayerPieces(evalForP1);
+		List<Point> opponentPieces = getPlayerPieces(!evalForP1);
+		double distanceOverall = 0;
+		//Calculate overall distance
+		for (Point cP : playerPieces) {
+			for (Point oP : opponentPieces) {
+				distanceOverall += cP.distance(oP);
+			}
+		}
+		//Check if current player has more pieces
+		double maxDistance = Math.sqrt(Math.pow(board.getRows(),2) + Math.pow(board.getCols(),2));
+		if(playerPieces.size()  > opponentPieces.size()) {
+			//Current player has more pieces, so he should aim to minimize the distance
+			return (maxDistance * 12 * 12) - (distanceOverall);
+		}else {
+			//Current player has less pieces, so he should aim to maximise the distance
+			return distanceOverall;
+		}
+	}
+	
+	
+	private List<Point> getPlayerPieces(boolean isP1) {
+		List<Point> pieces;
+		if(isP1) {
+			pieces = board.find(Board.WHITE_CHECKER);
+			pieces.addAll(board.find(Board.WHITE_KING));
+		} else{ //Player 2 turn
+			pieces = board.find(Board.BLACK_CHECKER);
+			pieces.addAll(board.find(Board.BLACK_KING));
+		}
+		return pieces;
+	}
+	
+	
 }
