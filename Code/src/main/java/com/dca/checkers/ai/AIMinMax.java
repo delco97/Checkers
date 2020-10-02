@@ -9,7 +9,7 @@ import com.dca.checkers.model.Player;
 import java.util.List;
 
 /**
- * The {@code AIStupidPlayer} class represents a AI player that updates
+ * The {@code AIRandomPlayer} class represents a AI player that updates
  * the board based one alpha beta algorithm.
  */
 public class AIMinMax extends Player {

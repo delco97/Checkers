@@ -26,35 +26,6 @@ public class Game implements State {
 	/** The index of the last skip, to allow for multiple skips in a turn. */
 	private int skipIndex;
 	
-	/* ----- WEIGHTS ----- */
-	/** The weight of being able to skip. */
-	private static final double WEIGHT_SKIP = 25;
-	
-	/** The weight of being able to skip on next turn. */
-	private static final double SKIP_ON_NEXT = 20;
-	
-	/** The weight associated with being safe then safe before and after. */
-	private static final double SAFE_SAFE = 5;
-	
-	/** The weight associated with being safe then unsafe before and after. */
-	private static final double SAFE_UNSAFE = -40;
-	
-	/** The weight associated with being unsafe then safe before and after. */
-	private static final double UNSAFE_SAFE = 40;
-	
-	/** The weight associated with being unsafe then unsafe before and after. */
-	private static final double UNSAFE_UNSAFE = -40;
-	
-	/** The weight of a checker being safe. */
-	private static final double SAFE = 3;
-	
-	/** The weight of a checker being unsafe. */
-	private static final double UNSAFE = -5;
-	
-	/** The factor used to multiply some weights when the checker being
-	 * observed is a king. */
-	private static final double KING_FACTOR = 2;
-	/* ------------ */
 	
 	public Game() {
 		restart();
@@ -306,106 +277,6 @@ public class Game implements State {
 	}
 	
 	/**
-	 * Determines the weight of a move based on a number of factors (e.g. how
-	 * safe the checker is before/after, whether it can take an opponents
-	 * checker after, etc).
-	 *
-	 * @param m		the move to test.
-	 * @return the weight corresponding to move m.
-	 */
-	public double getMoveWeight(Move m) {
-		double w = 0; //weight calculated
-		Point start = m.getStart(), end = m.getEnd();
-		int startIndex = Board.toIndex(start), endIndex = Board.toIndex(end);
-		Board b = getBoard();
-		boolean changed = isP1Turn();
-		boolean safeBefore = b.isSafe(start);
-		int id = b.get(startIndex);
-		boolean isKing;
-		
-		// Set the initial weight
-		if(m.getType() == MoveType.SKIP) w += WEIGHT_SKIP;
-		w += (getSafetyWeight(isP1Turn()));
-		
-		// Make the move
-		if (!move(m.getStartIndex(), m.getEndIndex())) {
-			return Move.WEIGHT_INVALID;
-		}
-		b = getBoard();
-		changed = (changed != isP1Turn());
-		id = b.get(endIndex);
-		isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
-		boolean safeAfter = true;
-		
-		// Determine if a skip could be made on next move
-		if (changed) {
-			safeAfter = b.isSafe(end);
-			int depth = getSkipDepth(endIndex, !isP1Turn());
-			if (safeAfter) {
-				w += (SKIP_ON_NEXT * depth * depth);
-			} else {
-				w += (SKIP_ON_NEXT);
-			}
-		}
-		
-		// Check how many more skips are available
-		else {
-			int depth = getSkipDepth(startIndex, isP1Turn());
-			w += (WEIGHT_SKIP * depth * depth);
-		}
-		
-		// Add the weight appropriate to how safe the checker is
-		if (safeBefore && safeAfter) {
-			w += (SAFE_SAFE);
-		} else if (!safeBefore && safeAfter) {
-			w += (UNSAFE_SAFE);
-		} else if (safeBefore && !safeAfter) {
-			w += (SAFE_UNSAFE * (isKing? KING_FACTOR : 1));
-		} else {
-			w += (UNSAFE_UNSAFE);
-		}
-		w += (getSafetyWeight(changed != isP1Turn()));
-		
-		return w;
-	}
-	
-	/**
-	 * Calculates the 'safety' state of the game for the player specified. The
-	 * player has 'safe' and 'unsafe' checkers, which respectively, cannot and
-	 * can be skipped by the opponent in the next turn.
-	 *
-	 * @param isBlack	the flag indicating if black checkers should be observed.
-	 * @return the weight corresponding to how safe the player's checkers are.
-	 */
-	public double getSafetyWeight(boolean isBlack) {
-		
-		// Get the checkers
-		double weight = 0;
-		List<Point> checkers = new ArrayList<>();
-		if (isBlack) {
-			checkers.addAll(board.find(Board.BLACK_CHECKER));
-			checkers.addAll(board.find(Board.BLACK_KING));
-		} else {
-			checkers.addAll(board.find(Board.WHITE_CHECKER));
-			checkers.addAll(board.find(Board.WHITE_KING));
-		}
-		
-		// Determine conditions for each checker
-		for (Point checker : checkers) {
-			int index = Board.toIndex(checker);
-			int id = board.get(index);
-			boolean isKing = (id == Board.BLACK_KING || id == Board.WHITE_KING);
-			if (board.isSafe(checker)) {
-				weight += SAFE;
-			} else {
-				weight += UNSAFE * (isKing? KING_FACTOR : 1);
-			}
-		}
-		
-		return weight;
-	}
-	
-	/**
 	 * Gets the number of skips that can be made in one turn from a given start
 	 * index.
 	 *
@@ -519,14 +390,14 @@ public class Game implements State {
 	@Override
 	public double value(boolean evalForP1) {
 		//Game is not over
-		if(isEndingPhase())
-			return endStateValue1(evalForP1);
-		else
+		//if(isEndingPhase())
+		//	return endStateValue1(evalForP1);
+		//else
 			return stateValue1(evalForP1);
 	}
 	
 	/**
-	 * Tell if the game is going to end soon.
+	 * Tell if the game is in its final phase.
 	 * In others words, it tells if on the board are present only kings.
 	 * @return true if the game is ending; false otherwise.
 	 */

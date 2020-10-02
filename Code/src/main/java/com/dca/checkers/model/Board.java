@@ -379,7 +379,6 @@ public class Board {
 		
 	}
 	
-	
 	/**
 	 * Validates all ID related values for the start, end, and middle (if the
 	 * move is a skip).

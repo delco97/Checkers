@@ -114,6 +114,11 @@ public class CheckerBoard extends JButton {
 		this.timer.start();
 	}
 	
+	public void restart() {
+		game.restart();
+		update();
+	}
+	
 	public synchronized boolean setGameState(boolean testValue,
 											 String newState, String expected) {
 		
@@ -310,6 +315,7 @@ public class CheckerBoard extends JButton {
 		if (game.isP1Turn() && !this.player1.isHuman()) {
 			this.selected = null;
 		}
+		update();
 	}
 
 	public Player getPlayer2() {
@@ -321,6 +327,7 @@ public class CheckerBoard extends JButton {
 		if (!game.isP1Turn() && !this.player2.isHuman()) {
 			this.selected = null;
 		}
+		update();
 	}
 	
 	public Player getCurrentPlayer() {

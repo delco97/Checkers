@@ -7,7 +7,7 @@
 package com.dca.checkers.ui;
 
 import com.dca.checkers.ai.AIMinMax;
-import com.dca.checkers.ai.AIStupidPlayer;
+import com.dca.checkers.ai.AIRandomPlayer;
 import com.dca.checkers.model.HumanPlayer;
 import com.dca.checkers.model.Player;
 
@@ -48,7 +48,7 @@ public class OptionPanel extends JPanel {
 		
 		// Initialize the components
 		OptionListener ol = new OptionListener();
-		final String[] playerTypeOpts = {"Human", "AI - Empirica", "AI - MinMax"};
+		final String[] playerTypeOpts = {"Human", "AI - Random", "AI - MinMax"};
 		this.restartBtn = new JButton("Restart");
 		this.player1Opts = new JComboBox<>(playerTypeOpts);
 		this.player2Opts = new JComboBox<>(playerTypeOpts);
@@ -82,15 +82,6 @@ public class OptionPanel extends JPanel {
 		this.add(middle);
 		this.add(bottom);
 	}
-
-	public CheckersWindow getWindow() {
-		return window;
-	}
-
-	public void setWindow(CheckersWindow window) {
-		this.window = window;
-	}
-	
 	
 	/**
 	 * Gets a new instance of the type of player selected for the specified
@@ -109,8 +100,8 @@ public class OptionPanel extends JPanel {
 		
 		// Determine the type
 		String type = "" + playerOpts.getSelectedItem();
-		if (type.equals("AI - Empirica")) {
-			player = new AIStupidPlayer();
+		if (type.equals("AI - Random")) {
+			player = new AIRandomPlayer();
 		}
 		if (type.equals("AI - MinMax")) {
 			player = new AIMinMax();

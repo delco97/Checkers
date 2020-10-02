@@ -57,10 +57,6 @@ public class CheckersWindow extends JFrame {
 		this.add(layout);
 	}
 	
-	public CheckerBoard getBoard() {
-		return board;
-	}
-
 	/**
 	 * Updates the type of player that is being used for player 1.
 	 * 
@@ -68,7 +64,6 @@ public class CheckersWindow extends JFrame {
 	 */
 	public void setPlayer1(Player player1) {
 		this.board.setPlayer1(player1);
-		this.board.update();
 	}
 	
 	/**
@@ -78,19 +73,13 @@ public class CheckersWindow extends JFrame {
 	 */
 	public void setPlayer2(Player player2) {
 		this.board.setPlayer2(player2);
-		this.board.update();
 	}
 	
 	/**
 	 * Resets the game of checkers in the window.
 	 */
 	public void restart() {
-		this.board.getGame().restart();
-		this.board.update();
-	}
-	
-	public void setGameState(String state) {
-		this.board.getGame().setGameState(state);
+		board.restart();
 	}
 	
 }
