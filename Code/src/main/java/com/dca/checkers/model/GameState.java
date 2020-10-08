@@ -7,6 +7,7 @@ import com.dca.checkers.ai.State;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * The {@code GameState} class represents a game of checkers and ensures that all
@@ -24,6 +25,20 @@ public class GameState implements State {
 	/** The index of the last skip, to allow for multiple skips in a turn. */
 	private int skipIndex;
 	
+	/**
+	 * Number of moves excecuted by p1 from last skip ex
+	 */
+	private int cntMovesFromLastSkip;
+	
+	/**
+	 * Max number of moves without a skip required to declare a draw
+	 */
+	private final int maxNumMovesForDraw = 40;
+	
+	/**
+	 * Flag that tells if current state is a draw.
+	 */
+	private boolean draw;
 	
 	public GameState() {
 		restart();
@@ -50,6 +65,8 @@ public class GameState implements State {
 		g.board = board.copy();
 		g.isP1Turn = isP1Turn;
 		g.skipIndex = skipIndex;
+		g.cntMovesFromLastSkip = cntMovesFromLastSkip;
+		g.draw = draw;
 		return g;
 	}
 	
@@ -58,8 +75,10 @@ public class GameState implements State {
 	 */
 	public void restart() {
 		this.board = new Board();
-		this.isP1Turn = true;
+		this.isP1Turn = false;
 		this.skipIndex = -1;
+		this.cntMovesFromLastSkip = 0;
+		this.draw = false;
 	}
 	
 	/**
@@ -88,9 +107,9 @@ public class GameState implements State {
 	public boolean move(int startIndex, int endIndex) {
 		
 		// Validate the move
-		if (!isValidMove(startIndex, endIndex)) {
+		Move m = getMove(startIndex, endIndex);
+		if (m == null) //Invalid move!
 			return false;
-		}
 		
 		// Make the move
 		Point middle = Board.middle(startIndex, endIndex);
@@ -119,12 +138,48 @@ public class GameState implements State {
 		if (!midValid || board.copy().getPieceSkips(endIndex).isEmpty()) {
 			switchTurn = true;
 		}
+		//Handle draw check
+		if (!draw) {//Draw not declared yet
+			if (hasKing()) {
+				if (m.getType() == MoveType.SKIP) cntMovesFromLastSkip = 0;
+				else draw = (++cntMovesFromLastSkip) >= maxNumMovesForDraw;
+			}
+		}
 		if (switchTurn) {
 			this.isP1Turn = !isP1Turn;
 			this.skipIndex = -1;
 		}
 		
 		return true;
+	}
+	
+	/**
+	 * Get number of normal moves (no skip) left to reach a draw
+	 */
+	public int getNumMovesBeforeDraw() {
+		return maxNumMovesForDraw - cntMovesFromLastSkip;
+	}
+	
+	private Move getMove(int startIndex, int endIndex) {
+		List<Move> moves = getAllMoves();
+		for (Move m : moves) {
+			if (m.getStartIndex() == startIndex && m.getEndIndex() == endIndex) return m;
+		}
+		return null;
+	}
+	
+	/**
+	 * Check if at least one kinh is present on the board
+	 */
+	public boolean hasKing() {
+		List<Point> pieces = getPlayerPieces(true);
+		pieces.addAll(getPlayerPieces(false));
+		int id = -1;
+		for (Point p : pieces) {
+			id = board.get(Board.toIndex(p));
+			if (id == Board.WHITE_KING || id == Board.BLACK_KING) return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -149,7 +204,10 @@ public class GameState implements State {
 	 * Get the current game result.
 	 */
 	public MatchResult getResult() {
-		// Ensure there is at least one of each checker
+		if (isDraw()) return MatchResult.DRAW;
+		if (currentPlayerCanMove()) return MatchResult.UNKNOWN;
+		return isP1Turn ? MatchResult.P2_WIN : MatchResult.P1_WIN;
+/*		// Ensure there is at least one of each checker
 		List<Point> black = board.find(Board.BLACK_CHECKER);
 		black.addAll(board.find(Board.BLACK_KING));
 
@@ -174,7 +232,13 @@ public class GameState implements State {
 		
 		
 		// Current players has no moves => Opponent wins
-		return isP1Turn ? MatchResult.P2_WIN:MatchResult.P1_WIN;
+		return isP1Turn ? MatchResult.P2_WIN:MatchResult.P1_WIN;*/
+		
+	}
+	
+	/** Check if a draw is occurred. */
+	private boolean isDraw() {
+		return draw;
 	}
 	
 	/**

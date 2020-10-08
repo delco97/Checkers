@@ -125,7 +125,6 @@ public class GameManager extends Thread {
 					e.printStackTrace();
 				}
 			}
-			System.out.println("Current player is a human! Wait a move to being selected ...");
 			currentPlayer.updateGame(gameState);
 			waitPlayerChoice(currentPlayer);
 			updateUI();
@@ -260,8 +259,12 @@ public class GameManager extends Thread {
 		this.isPaused = true;
 		this.isReadyToStart = false;
 		this.isOnGoing = false;
-		updateUI();
-		opt.resetBtn.setEnabled(false);
+		//If the current player is a Human, skip the wait for his move
+		Player current = getCurrentPlayer();
+		if (current.isHuman()) {
+			((HumanPlayer) current).skipNextMove();
+		}
+		notifyAll();
 	}
 	
 	synchronized public void gameOver() {
@@ -294,11 +297,6 @@ public class GameManager extends Thread {
 	
 	synchronized private void setUIPaused() {
 		writeToConsole("Game is paused.");
-		//If the current player is a Human, skip the wait for his move
-		Player current = getCurrentPlayer();
-		if (current.isHuman()) {
-			((HumanPlayer) current).skipNextMove();
-		}
 		opt.player1Opts.setEnabled(true);
 		opt.player2Opts.setEnabled(true);
 		opt.startBtn.setEnabled(false);

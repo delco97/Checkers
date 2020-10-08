@@ -21,7 +21,7 @@ public class CheckersWindow extends JFrame {
 	public static final int DEFAULT_WIDTH = 500;
 	
 	/** The default height for the checkers window. */
-	public static final int DEFAULT_HEIGHT = 750;
+	public static final int DEFAULT_HEIGHT = 825;
 	
 	/** The default title for the checkers window. */
 	public static final String DEFAULT_TITLE = "Checkers";
@@ -55,7 +55,7 @@ public class CheckersWindow extends JFrame {
 		GameState startState = new GameState();
 		JPanel layout = new JPanel(new BorderLayout());
 		this.opts = new OptionPanel(this);
-		this.board = new CheckerBoard(this, startState, opts.getTilesIdVisibility());
+		this.board = new CheckerBoard(this, startState, opts.getTilesIdVisibility(), opts.getShowMovablePieces(), opts.getShowNextMoves());
 		layout.add(board, BorderLayout.CENTER);
 		layout.add(opts, BorderLayout.SOUTH);
 		layout.setBackground(new Color(231, 187, 134));
@@ -127,6 +127,20 @@ public class CheckersWindow extends JFrame {
 	 */
 	public void pauseClick() {
 		gameManager.pauseClick();
+	}
+	
+	/**
+	 * Show (show == true) or hide (show == false) pieces that can be moved.
+	 */
+	public void setShowMovablePieces(boolean show) {
+		board.setShowMovablePieces(show);
+	}
+	
+	/**
+	 * Show (show == true) or hide (show == false) next moves of the selected piece.
+	 */
+	public void setShowNextMoves(boolean show) {
+		board.setShowNextMoves(show);
 	}
 	
 }

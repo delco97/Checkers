@@ -60,6 +60,16 @@ public class OptionPanel extends JPanel {
 	public JCheckBox cbTilesId;
 	
 	/**
+	 * Flag to show piece that the current player can move
+	 */
+	public JCheckBox cbShowMovablePieces;
+	
+	/**
+	 * Flag to show next moves of selected piece
+	 */
+	public JCheckBox cbShowNextMoves;
+	
+	/**
 	 * Console text area used to send messages to user
 	 */
 	public JTextArea txtConsole;
@@ -84,7 +94,9 @@ public class OptionPanel extends JPanel {
 		this.resetBtn = new JButton("Reset");
 		this.player1Opts = new JComboBox<>(playerTypeOpts);
 		this.player2Opts = new JComboBox<>(playerTypeOpts);
-		this.cbTilesId = new JCheckBox("Show tiles IDs", false);
+		this.cbTilesId = new JCheckBox("Show tiles IDs", true);
+		this.cbShowMovablePieces = new JCheckBox("Show movable pieces", true);
+		this.cbShowNextMoves = new JCheckBox("Show next moves", true);
 		this.txtConsole = new JTextArea();
 		this.txtConsole.setEditable(false);
 		this.txtConsole.setRows(3);
@@ -95,18 +107,24 @@ public class OptionPanel extends JPanel {
 		this.player1Opts.addActionListener(ol);
 		this.player2Opts.addActionListener(ol);
 		this.cbTilesId.addActionListener(ol);
+		this.cbShowMovablePieces.addActionListener(ol);
+		this.cbShowNextMoves.addActionListener(ol);
 		JScrollPane pan1 = new JScrollPane(txtConsole);
 		new SmartScroller(pan1);
 		JPanel pan2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel pan3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel pan4 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel pan5 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan6 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan7 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		pan1.setBackground(new Color(214, 34, 28));
 		pan2.setBackground(new Color(231, 187, 134));
 		pan3.setBackground(new Color(231, 187, 134));
 		pan4.setBackground(new Color(231, 187, 134));
 		pan5.setBackground(new Color(231, 187, 134));
+		pan6.setBackground(new Color(231, 187, 134));
+		pan7.setBackground(new Color(231, 187, 134));
 		
 		
 		// Add components to the layout
@@ -128,11 +146,15 @@ public class OptionPanel extends JPanel {
 		pan4.add(pauseBtn);
 		pan4.add(resetBtn);
 		pan5.add(cbTilesId);
+		pan6.add(cbShowMovablePieces);
+		pan7.add(cbShowNextMoves);
 		this.add(pan1);
 		this.add(pan2);
 		this.add(pan3);
 		this.add(pan4);
 		this.add(pan5);
+		this.add(pan6);
+		this.add(pan7);
 	}
 	
 	/**
@@ -180,7 +202,7 @@ public class OptionPanel extends JPanel {
 	 * Get the flag that tells tiles id must be shown or not.
 	 */
 	public boolean getTilesIdVisibility() {
-		return false;
+		return cbTilesId.isSelected();
 	}
 	
 	/**
@@ -188,6 +210,20 @@ public class OptionPanel extends JPanel {
 	 */
 	public JTextArea getConsole() {
 		return txtConsole;
+	}
+	
+	/**
+	 * Get the flag that tells if movable pieces must be shown
+	 */
+	public boolean getShowMovablePieces() {
+		return cbShowMovablePieces.isSelected();
+	}
+	
+	/**
+	 * Get the flag that tells if movable pieces must be shown
+	 */
+	public boolean getShowNextMoves() {
+		return cbShowNextMoves.isSelected();
 	}
 	
 	/**
@@ -221,9 +257,12 @@ public class OptionPanel extends JPanel {
 			} else if (src == player2Opts) {
 				Player player = getPlayer(player2Opts);
 				window.setPlayer2(player);
-				
 			} else if (src == cbTilesId) {
 				window.setTileIdVisibiliy(cbTilesId.isSelected());
+			} else if (src == cbShowMovablePieces) {
+				window.setShowMovablePieces(cbShowMovablePieces.isSelected());
+			} else if (src == cbShowNextMoves) {
+				window.setShowNextMoves(cbShowNextMoves.isSelected());
 			}
 		}
 	}
