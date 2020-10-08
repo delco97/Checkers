@@ -380,11 +380,11 @@ public class Board {
 	}
 	
 	/**
-	 * Validates all ID related values for the start, end, and middle (if the
+	 * Validates all ID related values for the startClick, end, and middle (if the
 	 * move is a skip).
 	 *
 	 * @param isP1Turn   the flag indicating if it is player 1's turn.
-	 * @param startIndex the start index of the move.
+	 * @param startIndex the startClick index of the move.
 	 * @param endIndex   the end index of the move.
 	 * @return true if and only if all IDs are valid.
 	 */
@@ -415,7 +415,7 @@ public class Board {
 	 * no skips are available by other checkers of the same player.
 	 *
 	 * @param isP1Turn   the flag indicating if it is player 1's turn.
-	 * @param startIndex the start index of the move.
+	 * @param startIndex the startClick index of the move.
 	 * @param endIndex   the end index of the move.
 	 * @return true if and only if the move distance is valid.
 	 */
@@ -522,10 +522,10 @@ public class Board {
 	}
 	
 	/**
-	 * Gets a list of move end-points for a given start index.
+	 * Gets a list of move end-points for a given startClick index.
 	 *
 	 * @param start the center index to look for moves around.
-	 * @return the list of points such that the start to a given point
+	 * @return the list of points such that the startClick to a given point
 	 * represents a move available.
 	 * @see #getPieceMoves(int)
 	 */
@@ -534,10 +534,10 @@ public class Board {
 	}
 	
 	/**
-	 * Gets a list of move end-points for a given start index.
+	 * Gets a list of move end-points for a given startClick index.
 	 *
 	 * @param startIndex the center index to look for moves around.
-	 * @return the list of points such that the start to a given point
+	 * @return the list of points such that the startClick to a given point
 	 * represents a move available.
 	 * @see #getPieceMoves(Point)
 	 */
@@ -569,7 +569,7 @@ public class Board {
 	 * Gets a list of skip end-points for a given starting point.
 	 *
 	 * @param start the center index to look for skips around.
-	 * @return the list of points such that the start to a given point
+	 * @return the list of points such that the startClick to a given point
 	 * represents a skip available.
 	 * @see #getPieceSkips(int)
 	 */
@@ -578,10 +578,10 @@ public class Board {
 	}
 	
 	/**
-	 * Gets a list of skip end-points for a given start index.
+	 * Gets a list of skip end-points for a given startClick index.
 	 *
 	 * @param startIndex the center index to look for skips around.
-	 * @return the list of points such that the start to a given point
+	 * @return the list of points such that the startClick to a given point
 	 * represents a skip available.
 	 * @see #getPieceSkips(Point)
 	 */
@@ -616,7 +616,7 @@ public class Board {
 	/**
 	 * Checks if a skip is valid.
 	 *
-	 * @param startIndex the start index of the skip.
+	 * @param startIndex the startClick index of the skip.
 	 * @param endIndex   the end index of the skip.
 	 * @return true if and only if the skip can be performed.
 	 */

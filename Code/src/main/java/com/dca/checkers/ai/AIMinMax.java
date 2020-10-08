@@ -1,9 +1,8 @@
 
 package com.dca.checkers.ai;
 
-import com.dca.checkers.model.Game;
+import com.dca.checkers.model.GameState;
 import com.dca.checkers.model.Move;
-import com.dca.checkers.model.MoveType;
 import com.dca.checkers.model.Player;
 
 import java.util.List;
@@ -12,11 +11,14 @@ import java.util.List;
  * The {@code AIRandomPlayer} class represents a AI player that updates
  * the board based one alpha beta algorithm.
  */
-public class AIMinMax extends Player {
+public class AIMinMax implements Player {
 	
 	private static final int depth = 7;
 	
 	private boolean isBlack;
+	
+	private boolean moveDone;
+	
 	
 	@Override
 	public boolean isHuman() {
@@ -24,18 +26,24 @@ public class AIMinMax extends Player {
 	}
 
 	@Override
-	public void updateGame(Game game) {
-		
+	synchronized public void updateGame(GameState gameState) {
+		moveDone = false;
 		// Nothing to do
-		if (game == null || game.isGameOver()) {
+		if (gameState == null || gameState.isGameOver()) {
+			moveDone = true;
 			return;
 		}
-		isBlack = game.isP1Turn();
+		isBlack = gameState.isP1Turn();
 		//Select best move
-		MinMaxResult bestResult = minMax(game.copy(),null, depth, true);
+		MinMaxResult bestResult = minMax(gameState.copy(), null, depth, true);
 		//Apply best move
-		game.move(bestResult.move.getStartIndex(), bestResult.move.getEndIndex());
-		
+		gameState.move(bestResult.move.getStartIndex(), bestResult.move.getEndIndex());
+		moveDone = true;
+	}
+	
+	@Override
+	public boolean hasMoved() {
+		return moveDone;
 	}
 	
 	private class MinMaxResult {
@@ -57,7 +65,7 @@ public class AIMinMax extends Player {
 	 * @param isMaxPlayer flag that tells if the current player is max (true) or min (false)
 	 * @return
 	 */
-	private MinMaxResult minMax(Game g, Move m, int depth, boolean isMaxPlayer) {
+	private MinMaxResult minMax(GameState g, Move m, int depth, boolean isMaxPlayer) {
 		if(depth == 0 || g.isGameOver()) return new MinMaxResult(m, g.value(isBlack));
 		
 		double maxVal;
@@ -71,7 +79,7 @@ public class AIMinMax extends Player {
 			List<Move> moves = g.getAllMoves();
 			//Evaluate all games state reachable with each possible move
 			for (Move possibleMove : moves) {
-				Game childState = g.copy();
+				GameState childState = g.copy();
 				childState.move(possibleMove.getStartIndex(), possibleMove.getEndIndex());
 				MinMaxResult resChild = minMax(childState, possibleMove, depth - 1, false);
 				if(resChild.value > maxVal) {
@@ -88,7 +96,7 @@ public class AIMinMax extends Player {
 			List<Move> moves = g.getAllMoves();
 			//Evaluate all games state reachable with each possible move
 			for (Move possibleMove : moves) {
-				Game childState = g.copy();
+				GameState childState = g.copy();
 				childState.move(possibleMove.getStartIndex(), possibleMove.getEndIndex());
 				MinMaxResult resChild = minMax(childState, possibleMove, depth - 1, true);
 				if(resChild.value < minVal) {
@@ -103,4 +111,8 @@ public class AIMinMax extends Player {
 		
 	}
 	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[isHuman=" + isHuman() + "]";
+	}
 }

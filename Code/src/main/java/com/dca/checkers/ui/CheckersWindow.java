@@ -1,6 +1,8 @@
 
 package com.dca.checkers.ui;
 
+import com.dca.checkers.model.GameManager;
+import com.dca.checkers.model.GameState;
 import com.dca.checkers.model.Player;
 
 import javax.swing.*;
@@ -19,7 +21,7 @@ public class CheckersWindow extends JFrame {
 	public static final int DEFAULT_WIDTH = 500;
 	
 	/** The default height for the checkers window. */
-	public static final int DEFAULT_HEIGHT = 600;
+	public static final int DEFAULT_HEIGHT = 750;
 	
 	/** The default title for the checkers window. */
 	public static final String DEFAULT_TITLE = "Checkers";
@@ -27,17 +29,19 @@ public class CheckersWindow extends JFrame {
 	/** The checker board component playing the updatable game. */
 	private CheckerBoard board;
 	
+	/**
+	 * Reference to the game manager
+	 */
+	private GameManager gameManager;
+	
+	/**
+	 * Reference to the option panel
+	 */
 	private OptionPanel opts;
 	
 	
 	public CheckersWindow() {
 		this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_TITLE);
-	}
-	
-	public CheckersWindow(Player player1, Player player2) {
-		this();
-		setPlayer1(player1);
-		setPlayer2(player2);
 	}
 	
 	public CheckersWindow(int width, int height, String title) {
@@ -48,13 +52,16 @@ public class CheckersWindow extends JFrame {
 		super.setLocationByPlatform(true);
 		
 		// Setup the components
+		GameState startState = new GameState();
 		JPanel layout = new JPanel(new BorderLayout());
-		this.board = new CheckerBoard(this);
 		this.opts = new OptionPanel(this);
+		this.board = new CheckerBoard(this, startState, opts.getTilesIdVisibility());
 		layout.add(board, BorderLayout.CENTER);
 		layout.add(opts, BorderLayout.SOUTH);
 		layout.setBackground(new Color(231, 187, 134));
 		this.add(layout);
+		gameManager = new GameManager(startState, board, opts);
+		gameManager.start();
 	}
 	
 	/**
@@ -63,7 +70,8 @@ public class CheckersWindow extends JFrame {
 	 * @param player1	the new player instance to control player 1.
 	 */
 	public void setPlayer1(Player player1) {
-		this.board.setPlayer1(player1);
+		System.out.println("Requested set of player 1.");
+		gameManager.setPlayer1(player1);
 	}
 	
 	/**
@@ -72,14 +80,53 @@ public class CheckersWindow extends JFrame {
 	 * @param player2	the new player instance to control player 2.
 	 */
 	public void setPlayer2(Player player2) {
-		this.board.setPlayer2(player2);
+		System.out.println("Requested set of player 2.");
+		gameManager.setPlayer2(player2);
+	}
+	
+	/**
+	 * Handle a click over the game board.
+	 *
+	 * @param sel the select point on the game board.
+	 */
+	public void clickOnBoard(Point sel) {
+		System.out.println("Requested click request.");
+		gameManager.handleBoardClick(sel);
+	}
+	
+	/**
+	 * Set tiles id visibility
+	 */
+	public void setTileIdVisibiliy(boolean isVisible) {
+		board.setTileIdVisibiliy(isVisible);
 	}
 	
 	/**
 	 * Resets the game of checkers in the window.
 	 */
-	public void restart() {
-		board.restart();
+	public void resetClick() {
+		gameManager.resetClick();
+	}
+	
+	/**
+	 * Start the game
+	 */
+	public void startClick() {
+		gameManager.startClick();
+	}
+	
+	/**
+	 * Resume the paused game
+	 */
+	public void resumeClick() {
+		gameManager.resumeClick();
+	}
+	
+	/**
+	 * Pause the current game
+	 */
+	public void pauseClick() {
+		gameManager.pauseClick();
 	}
 	
 }

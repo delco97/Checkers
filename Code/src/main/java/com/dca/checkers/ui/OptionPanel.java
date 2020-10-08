@@ -6,6 +6,7 @@
 
 package com.dca.checkers.ui;
 
+import com.dca.checkers.Utilities.SmartScroller;
 import com.dca.checkers.ai.AIMinMax;
 import com.dca.checkers.ai.AIRandomPlayer;
 import com.dca.checkers.model.HumanPlayer;
@@ -27,14 +28,42 @@ public class OptionPanel extends JPanel {
 	/** The checkers window to update when an option is changed. */
 	private CheckersWindow window;
 	
-	/** The button that when clicked, restarts the game. */
-	private JButton restartBtn;
+	/**
+	 * The button that when clicked, starts the game.
+	 */
+	public JButton startBtn;
+	
+	/**
+	 * The button that when clicked, reset the game.
+	 */
+	public JButton resetBtn;
+	
+	/**
+	 * The button that when clicked, restarts the game if it was previously paused.
+	 */
+	public JButton resumeBtn;
+	
+	/**
+	 * The button that when clicked, pauses the game.
+	 */
+	public JButton pauseBtn;
 	
 	/** The combo box that changes what type of player player 1 is. */
-	private JComboBox<String> player1Opts;
+	public JComboBox<String> player1Opts;
 
 	/** The combo box that changes what type of player player 2 is. */
-	private JComboBox<String> player2Opts;
+	public JComboBox<String> player2Opts;
+	
+	/**
+	 * Flag for tiles ids visibility
+	 */
+	public JCheckBox cbTilesId;
+	
+	/**
+	 * Console text area used to send messages to user
+	 */
+	public JTextArea txtConsole;
+	
 	
 	/**
 	 * Creates a new option panel for the specified checkers window.
@@ -49,38 +78,75 @@ public class OptionPanel extends JPanel {
 		// Initialize the components
 		OptionListener ol = new OptionListener();
 		final String[] playerTypeOpts = {"Human", "AI - Random", "AI - MinMax"};
-		this.restartBtn = new JButton("Restart");
+		this.startBtn = new JButton("Start");
+		this.resumeBtn = new JButton("Resume");
+		this.pauseBtn = new JButton("Pause");
+		this.resetBtn = new JButton("Reset");
 		this.player1Opts = new JComboBox<>(playerTypeOpts);
 		this.player2Opts = new JComboBox<>(playerTypeOpts);
-		this.restartBtn.addActionListener(ol);
+		this.cbTilesId = new JCheckBox("Show tiles IDs", false);
+		this.txtConsole = new JTextArea();
+		this.txtConsole.setEditable(false);
+		this.txtConsole.setRows(3);
+		this.startBtn.addActionListener(ol);
+		this.resumeBtn.addActionListener(ol);
+		this.pauseBtn.addActionListener(ol);
+		this.resetBtn.addActionListener(ol);
 		this.player1Opts.addActionListener(ol);
 		this.player2Opts.addActionListener(ol);
-		JPanel top = new JPanel(new FlowLayout(FlowLayout.CENTER));
-		JPanel middle = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		this.cbTilesId.addActionListener(ol);
+		JScrollPane pan1 = new JScrollPane(txtConsole);
+		new SmartScroller(pan1);
+		JPanel pan2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan3 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan4 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan5 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
-		top.setBackground(new Color(231, 187, 134));
-		middle.setBackground(new Color(231, 187, 134));
-		bottom.setBackground(new Color(231, 187, 134));
+		pan1.setBackground(new Color(214, 34, 28));
+		pan2.setBackground(new Color(231, 187, 134));
+		pan3.setBackground(new Color(231, 187, 134));
+		pan4.setBackground(new Color(231, 187, 134));
+		pan5.setBackground(new Color(231, 187, 134));
 		
 		
 		// Add components to the layout
-		top.add(restartBtn);
+		//pan1.add(txtConsole);
 		JLabel txtP1 = new JLabel("Player 1: ");
 		txtP1.setOpaque(true);
 		txtP1.setBackground(Color.BLACK);
 		txtP1.setForeground(Color.WHITE);
-		middle.add(txtP1);
-		middle.add(player1Opts);
+		pan2.add(txtP1);
+		pan2.add(player1Opts);
 		JLabel txtP2 = new JLabel("Player 2: ");
 		txtP2.setOpaque(true);
 		txtP2.setBackground(Color.WHITE);
 		txtP2.setForeground(Color.BLACK);
-		bottom.add(txtP2);
-		bottom.add(player2Opts);
-		this.add(top);
-		this.add(middle);
-		this.add(bottom);
+		pan3.add(txtP2);
+		pan3.add(player2Opts);
+		pan4.add(startBtn);
+		pan4.add(resumeBtn);
+		pan4.add(pauseBtn);
+		pan4.add(resetBtn);
+		pan5.add(cbTilesId);
+		this.add(pan1);
+		this.add(pan2);
+		this.add(pan3);
+		this.add(pan4);
+		this.add(pan5);
+	}
+	
+	/**
+	 * Get the type of player select for player 1
+	 */
+	public Player getPlayer1() {
+		return getPlayer(player1Opts);
+	}
+	
+	/**
+	 * Get the type of player select for player 2
+	 */
+	public Player getPlayer2() {
+		return getPlayer(player2Opts);
 	}
 	
 	/**
@@ -91,7 +157,7 @@ public class OptionPanel extends JPanel {
 	 * @return a new instance of a {@link com.dca.checkers.model.Player} object that corresponds
 	 * with the type of player selected.
 	 */
-	private static Player getPlayer(JComboBox<String> playerOpts) {
+	private Player getPlayer(JComboBox<String> playerOpts) {
 		
 		Player player = new HumanPlayer();
 		if (playerOpts == null) {
@@ -111,6 +177,20 @@ public class OptionPanel extends JPanel {
 	}
 	
 	/**
+	 * Get the flag that tells tiles id must be shown or not.
+	 */
+	public boolean getTilesIdVisibility() {
+		return false;
+	}
+	
+	/**
+	 * Return the console object.
+	 */
+	public JTextArea getConsole() {
+		return txtConsole;
+	}
+	
+	/**
 	 * The {@code OptionListener} class responds to the components within the
 	 * option panel when they are clicked/updated.
 	 */
@@ -125,17 +205,25 @@ public class OptionPanel extends JPanel {
 			}
 			
 			Object src = e.getSource();
-
+			
 			// Handle the user action
-			if (src == restartBtn) {
-				window.restart();
+			if (src == resetBtn) {
+				window.resetClick();
+			} else if (src == startBtn) {
+				window.startClick();
+			} else if (src == resumeBtn) {
+				window.resumeClick();
+			}else if(src == pauseBtn){
+				window.pauseClick();
 			} else if (src == player1Opts) {
 				Player player = getPlayer(player1Opts);
 				window.setPlayer1(player);
 			} else if (src == player2Opts) {
 				Player player = getPlayer(player2Opts);
 				window.setPlayer2(player);
-
+				
+			} else if (src == cbTilesId) {
+				window.setTileIdVisibiliy(cbTilesId.isSelected());
 			}
 		}
 	}

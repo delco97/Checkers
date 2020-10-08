@@ -3,38 +3,49 @@ package com.dca.checkers.ai;
 
 import com.dca.checkers.model.*;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The {@code AIRandomPlayer} class represents a AI player who plays randomly
  */
-public class AIRandomPlayer extends Player {
+public class AIRandomPlayer implements Player {
 	
-
+	private boolean moveDone;
+	
 	@Override
 	public boolean isHuman() {
 		return false;
 	}
 
 	@Override
-	public void updateGame(Game game) {
-		
+	synchronized public void updateGame(GameState gameState) {
+		moveDone = false;
 		// Nothing to do
-		if (game == null || game.isGameOver()) {
+		if (gameState == null || gameState.isGameOver()) {
+			moveDone = true;
 			return;
 		}
 			
 		// Get the available moves
-		Game copy = game.copy();
+		GameState copy = gameState.copy();
 		List<Move> moves = copy.getAllMoves();
 		// Choose a random move
 		int moveId = (int)(Math.random() * moves.size()-1);
 		Move selectedMove = moves.get(moveId);
-		game.move(selectedMove.getStart(), selectedMove.getEnd());
+		gameState.move(selectedMove.getStart(), selectedMove.getEnd());
+		moveDone = true;
 	}
-
+	
+	@Override
+	synchronized public boolean hasMoved() {
+		return moveDone;
+	}
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[isHuman=" + isHuman() + "]";
+	}
+	
 }
 
 

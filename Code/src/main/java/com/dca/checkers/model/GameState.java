@@ -6,15 +6,13 @@ import com.dca.checkers.ai.State;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * The {@code Game} class represents a game of checkers and ensures that all
+ * The {@code GameState} class represents a game of checkers and ensures that all
  * moves made are valid as per the rules of checkers.
  */
-public class Game implements State {
+public class GameState implements State {
 
 	
 	/** The current state of the checker board. */
@@ -27,15 +25,15 @@ public class Game implements State {
 	private int skipIndex;
 	
 	
-	public Game() {
+	public GameState() {
 		restart();
 	}
 	
-	public Game(String state) {
+	public GameState(String state) {
 		setGameState(state);
 	}
 	
-	public Game(Board board, boolean isP1Turn, int skipIndex) {
+	public GameState(Board board, boolean isP1Turn, int skipIndex) {
 		this.board = (board == null)? new Board() : board;
 		this.isP1Turn = isP1Turn;
 		this.skipIndex = skipIndex;
@@ -47,8 +45,8 @@ public class Game implements State {
 	 * 
 	 * @return an exact copy of this game.
 	 */
-	public Game copy() {
-		Game g = new Game();
+	public GameState copy() {
+		GameState g = new GameState();
 		g.board = board.copy();
 		g.isP1Turn = isP1Turn;
 		g.skipIndex = skipIndex;
@@ -65,9 +63,9 @@ public class Game implements State {
 	}
 	
 	/**
-	 * Attempts to make a move from the start point to the end point.
-	 * 
-	 * @param start	the start point for the move.
+	 * Attempts to make a move from the startClick point to the end point.
+	 *
+	 * @param start    the startClick point for the move.
 	 * @param end	the end point for the move.
 	 * @return true if and only if an update was made to the game state.
 	 * @see #move(int, int)
@@ -80,9 +78,9 @@ public class Game implements State {
 	}
 	
 	/**
-	 * Attempts to make a move given the start and end index of the move.
-	 * 
-	 * @param startIndex	the start index of the move.
+	 * Attempts to make a move given the startClick and end index of the move.
+	 *
+	 * @param startIndex    the startClick index of the move.
 	 * @param endIndex		the end index of the move.
 	 * @return true if and only if an update was made to the game state.
 	 * @see #move(Point, Point)
@@ -200,7 +198,18 @@ public class Game implements State {
 	/**
 	 * Determines if the specified move is valid based on the rules of checkers.
 	 *
-	 * @param startIndex the start index of the move.
+	 * @param start the startClick point of the move.
+	 * @param end   the end point of the move.
+	 * @return true if the move is legal according to the rules of checkers.
+	 */
+	public boolean isValidMove(Point start, Point end) {
+		return isValidMove(Board.toIndex(start), Board.toIndex(end));
+	}
+	
+	/**
+	 * Determines if the specified move is valid based on the rules of checkers.
+	 *
+	 * @param startIndex the startClick index of the move.
 	 * @param endIndex   the end index of the move.
 	 * @return true if the move is legal according to the rules of checkers.
 	 */
@@ -277,10 +286,36 @@ public class Game implements State {
 	}
 	
 	/**
-	 * Gets the number of skips that can be made in one turn from a given start
+	 * Gets all the available moves starting from startIndex.
+	 *
+	 * @return a list of valid moves that the player can make with piece in startIndex.
+	 */
+	public List<Move> getAllMoves(int startIndex) {
+		List<Move> moves = getAllMoves();
+		for (int i = 0; i < moves.size(); i++) {
+			if (moves.get(i).getStartIndex() != startIndex) moves.remove(i--);
+		}
+		return moves;
+	}
+	
+	/**
+	 * Check if the selected tiles startIndex has at least one move
+	 *
+	 * @return
+	 */
+	public boolean hasMove(int startIndex) {
+		return getAllMoves(startIndex).size() > 0;
+	}
+	
+	public boolean hasMove(Point p) {
+		return hasMove(Board.toIndex(p));
+	}
+	
+	/**
+	 * Gets the number of skips that can be made in one turn from a given startClick
 	 * index.
 	 *
-	 * @param startIndex	the start index of the skips.
+	 * @param startIndex    the startClick index of the skips.
 	 * @param isP1Turn		the original player turn flag.
 	 * @return the maximum number of skips available from the given point.
 	 */
@@ -307,10 +342,10 @@ public class Game implements State {
 	}
 	
 	/**
-	 * Gets a list of skip end-points for a given start index.
+	 * Gets a list of skip end-points for a given startClick index.
 	 *
 	 * @param startIndex the center index to look for skips around.
-	 * @return the list of points such that the start to a given point
+	 * @return the list of points such that the startClick to a given point
 	 * represents a skip available.
 	 */
 	public List<Point> getSkips(int startIndex) {
@@ -389,7 +424,7 @@ public class Game implements State {
 	 */
 	@Override
 	public double value(boolean evalForP1) {
-		//Game is not over
+		//GameState is not over
 		//if(isEndingPhase())
 		//	return endStateValue1(evalForP1);
 		//else
@@ -406,8 +441,7 @@ public class Game implements State {
 		checkers = board.find(Board.BLACK_CHECKER);
 		if(checkers.size() > 0) return false;
 		checkers = board.find(Board.WHITE_CHECKER);
-		if(checkers.size() > 0) return false;
-		return true;
+		return checkers.size() <= 0;
 	}
 	
 	/**
@@ -512,7 +546,6 @@ public class Game implements State {
 			return distanceOverall;
 		}
 	}
-	
 	
 	private List<Point> getPlayerPieces(boolean isP1) {
 		List<Point> pieces;

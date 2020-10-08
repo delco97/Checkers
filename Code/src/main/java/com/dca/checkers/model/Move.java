@@ -13,8 +13,10 @@ public class Move {
 	
 	/** The weight corresponding to an invalid move. */
 	public static final double WEIGHT_INVALID = Double.NEGATIVE_INFINITY;
-
-	/** The start index of the move. */
+	
+	/**
+	 * The startClick index of the move.
+	 */
 	private byte startIndex;
 	
 	/** The end index of the move. */

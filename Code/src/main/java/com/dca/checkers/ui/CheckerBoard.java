@@ -9,11 +9,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.List;
 
 /**
  * The {@code CheckerBoard} class is a graphical user interface component that
- * is capable of drawing any checkers game state. It also handles player turns.
+ * is capable of drawing any checkers gameState state. It also handles player turns.
  * For human players, this means interacting with and selecting tiles on the
  * checker board. For non-human players, this means using the logic implemented
  * by the specified player object itself is used.
@@ -22,54 +21,46 @@ public class CheckerBoard extends JButton {
 
 	private static final long serialVersionUID = -6014690893709316364L;
 	
-	/** The amount of milliseconds before a computer player takes a move. */
-	private static final int TIMER_DELAY = 1000;
-	
 	/** The number of pixels of padding between this component's border and the
 	 * actual checker board that is drawn. */
 	private static final int PADDING = 16;
-
-	/** The game of checkers that is being played on this component. */
-	private Game game;
+	
+	/**
+	 * The gameState of checkers that is being played on this component.
+	 */
+	private GameState gameState;
 	
 	/** The window containing this checker board UI component. */
 	private CheckersWindow window;
 	
-	/** The player in control of the black checkers. */
-	private Player player1;
-	
-	/** The player in control of the white checkers. */
-	private Player player2;
-	
 	/** The last point that the current player selected on the checker board. */
 	private Point selected;
 	
-	/** The flag to determine the colour of the selected tile. If the selection
-	 * is valid, a green colour is used to highlight the tile. Otherwise, a red
-	 * colour is used. */
+	/** The flag to determine if the selected tile is valid for the current user */
 	private boolean selectionValid;
 	
 	/** The colour of the light tiles (by default, this is white). */
 	private Color lightTile;
+	
+	/**
+	 * The colour of the tile id label.
+	 */
+	private Color tileIdColor;
 
 	/** The colour of the dark tiles (by default, this is black). */
 	private Color darkTile;
 	
-	/** A convenience flag to check if the game is over. */
-	private boolean isGameOver;
+	/**
+	 * Tells if the tiles id must be shown
+	 */
+	private boolean showTilesId;
 	
-	/** Match result */
-	private MatchResult result;
+	/**
+	 * Console used to comunicate with the user.
+	 */
+	private TextArea txtConsole;
 	
-	/** The timer to control how fast a computer player makes a move. */
-	private Timer timer;
-	
-	public CheckerBoard(CheckersWindow window) {
-		this(window, new Game(), null, null);
-	}
-	
-	public CheckerBoard(CheckersWindow window, Game game,
-			Player player1, Player player2) {
+	public CheckerBoard(CheckersWindow window, GameState gameState, boolean showTilesId) {
 		
 		// Setup the component
 		super.setBorderPainted(false);
@@ -78,80 +69,33 @@ public class CheckerBoard extends JButton {
 		super.setBackground(Color.LIGHT_GRAY);
 		this.addActionListener(new ClickListener());
 		
-		// Setup the game
-		this.game = (game == null)? new Game() : game;
+		// Setup the board settings
 		this.lightTile = new Color(254, 234, 184);
 		this.darkTile = new Color(79, 124, 38);
+		tileIdColor = new Color(61, 118, 46);
 		this.window = window;
-		setPlayer1(player1);
-		setPlayer2(player2);
+		this.showTilesId = showTilesId;
+		//Setup game
+		this.gameState = (gameState == null) ? new GameState() : gameState;
 	}
 	
 	/**
-	 * Checks if the game is over and redraws the component graphics.
-	 */
-	public void update() {
-		runPlayer();
-		result = game.getResult();
-		this.isGameOver = result != MatchResult.UNKNOWN;
-		repaint();
-	}
-	
-	private void runPlayer() {
-		
-		// Nothing to do
-		Player player = getCurrentPlayer();
-		if (player == null || player.isHuman())
-			return;
-		
-		
-		// Set a timer to run
-		this.timer = new Timer(TIMER_DELAY, e -> {
-			getCurrentPlayer().updateGame(game);
-			timer.stop();
-			update();
-		});
-		this.timer.start();
-	}
-	
-	public void restart() {
-		game.restart();
-		update();
-	}
-	
-	public synchronized boolean setGameState(boolean testValue,
-											 String newState, String expected) {
-		
-		// Test the value if requested
-		if (testValue && !game.getGameState().equals(expected)) {
-			return false;
-		}
-		
-		// Update the game state
-		this.game.setGameState(newState);
-		repaint();
-		
-		return true;
-	}
-	
-	/**
-	 * Draws the current checkers game state.
+	 * Draws the current checkers gameState state.
 	 */
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
 		
 		Graphics2D g2d = (Graphics2D) g;
-		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
-		Game game = this.game.copy();
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		GameState gameState = this.gameState.copy();
 		
 		// Perform calculations
-		final int BOX_PADDING = 4;
+		final int BOX_PADDING = 8;
 		final int W = getWidth(), H = getHeight();
-		final int DIM = W < H? W : H, BOX_SIZE = (DIM - 2 * PADDING) / 8;
-		final int OFFSET_X = (W - BOX_SIZE * 8) / 2;
-		final int OFFSET_Y = (H - BOX_SIZE * 8) / 2;
+		final int DIM = W < H ? W : H, BOX_SIZE = (DIM - 2 * PADDING) / 8;
+		final int OFFSET_X = (W - BOX_SIZE * 8) / 2 + 5;
+		final int OFFSET_Y = (H - BOX_SIZE * 8) / 2 +5;
 		final int CHECKER_SIZE = Math.max(0, BOX_SIZE - 2 * BOX_PADDING);
 		
 		// Draw checker board
@@ -176,18 +120,25 @@ public class CheckerBoard extends JButton {
 		}
 		
 		// Draw the checkers
-		Board b = game.getBoard();
+		int balckCount = 0;
+		Board b = gameState.getBoard();
 		for (int y = 0; y < 8; y ++) {
 			int cy = OFFSET_Y + y * BOX_SIZE + BOX_PADDING;
 			for (int x = (y + 1) % 2; x < 8; x += 2) {
 				int id = b.get(x, y);
+				int cx = OFFSET_X + x * BOX_SIZE + BOX_PADDING;
+				
+				//Set tile id
+				if (showTilesId) {
+					g.setColor(lightTile);
+					g.drawString(balckCount + "", cx - 7, cy + 2);
+					balckCount++;
+				}
 				
 				// Empty, just skip
 				if (id == Board.EMPTY) {
 					continue;
 				}
-				
-				int cx = OFFSET_X + x * BOX_SIZE + BOX_PADDING;
 				
 				// Black checker
 				if (id == Board.BLACK_CHECKER) {
@@ -252,18 +203,18 @@ public class CheckerBoard extends JButton {
 		}
 		
 		// Draw the player turn sign
-		String msg = game.isP1Turn()? "Player 1's turn" : "Player 2's turn";
+		String msg = gameState.isP1Turn() ? "Player 1's turn" : "Player 2's turn";
 		int width = g.getFontMetrics().stringWidth(msg);
-		Color back = game.isP1Turn()? Color.BLACK : Color.WHITE;
-		Color front = game.isP1Turn()? Color.WHITE : Color.BLACK;
+		Color back = gameState.isP1Turn() ? Color.BLACK : Color.WHITE;
+		Color front = gameState.isP1Turn() ? Color.WHITE : Color.BLACK;
 		g.setColor(back);
-		g.fillRect(W / 2 - width / 2 - 5, OFFSET_Y + 8 * BOX_SIZE + 2,
-				width + 10, 15);
+		g.fillRect(W / 2 - width / 2 - 5, OFFSET_Y - 17, width + 10, 15);
 		g.setColor(front);
-		g.drawString(msg, W / 2 - width / 2, OFFSET_Y + 8 * BOX_SIZE + 2 + 11);
+		g.drawString(msg, W / 2 - width / 2, OFFSET_Y - 5);
 		
-		// Draw a game over sign
-		if (isGameOver) {
+		// Draw a gameState over sign
+		if (gameState.isGameOver()) {
+			MatchResult result = gameState.getResult();
 			g.setFont(new Font("Arial", Font.BOLD, 20));
 			switch (result) {
 				case P1_WIN:
@@ -290,169 +241,65 @@ public class CheckerBoard extends JButton {
 		}
 	}
 	
-	public Game getGame() {
-		return game;
-	}
-
-	public void setGame(Game game) {
-		this.game = (game == null)? new Game() : game;
-	}
-
-	public CheckersWindow getWindow() {
-		return window;
-	}
-
-	public void setWindow(CheckersWindow window) {
-		this.window = window;
-	}
-
-	public Player getPlayer1() {
-		return player1;
-	}
-
-	public void setPlayer1(Player player1) {
-		this.player1 = (player1 == null)? new HumanPlayer() : player1;
-		if (game.isP1Turn() && !this.player1.isHuman()) {
-			this.selected = null;
-		}
-		update();
-	}
-
-	public Player getPlayer2() {
-		return player2;
-	}
-
-	public void setPlayer2(Player player2) {
-		this.player2 = (player2 == null)? new HumanPlayer() : player2;
-		if (!game.isP1Turn() && !this.player2.isHuman()) {
-			this.selected = null;
-		}
-		update();
-	}
-	
-	public Player getCurrentPlayer() {
-		return game.isP1Turn()? player1 : player2;
-	}
-
-	public Color getLightTile() {
-		return lightTile;
-	}
-
-	public void setLightTile(Color lightTile) {
-		this.lightTile = (lightTile == null)? Color.WHITE : lightTile;
-	}
-
-	public Color getDarkTile() {
-		return darkTile;
-	}
-
-	public void setDarkTile(Color darkTile) {
-		this.darkTile = (darkTile == null)? Color.BLACK : darkTile;
-	}
-
 	/**
-	 * Handles a click on this component at the specified point. If the current
-	 * player is not human, this method does nothing. Otherwise, the selected
-	 * point is updated and a move is attempted if the last click and this one
-	 * both are on black tiles.
-	 * 
-	 * @param x	the x-coordinate of the click on this component.
-	 * @param y	the y-coordinate of the click on this component.
+	 * Cancel last selection (if any).
 	 */
-	private void handleClick(int x, int y) {
-		
-		// The game is over or the current player isn't human
-		if (isGameOver || !getCurrentPlayer().isHuman()) {
-			return;
-		}
-		
-		Game copy = game.copy();
-		
-		// Determine what square (if any) was selected
-		final int W = getWidth(), H = getHeight();
-		final int DIM = W < H? W : H, BOX_SIZE = (DIM - 2 * PADDING) / 8;
-		final int OFFSET_X = (W - BOX_SIZE * 8) / 2;
-		final int OFFSET_Y = (H - BOX_SIZE * 8) / 2;
-		x = (x - OFFSET_X) / BOX_SIZE;
-		y = (y - OFFSET_Y) / BOX_SIZE;
-		Point sel = new Point(x, y);
-		
-		// Determine if a move should be attempted
-		if (Board.isValidPoint(sel) && Board.isValidPoint(selected)) {
-			boolean change = copy.isP1Turn();
-			String expected = copy.getGameState();
-			boolean move = copy.move(selected, sel);
-			boolean updated = (move && setGameState(true, copy.getGameState(), expected));
-			change = (copy.isP1Turn() != change);
-			this.selected = change? null : sel;
-		} else {
-			this.selected = sel;
-		}
-		
-		// Check if the selection is valid
-		this.selectionValid = isValidSelection(
-				copy.getBoard(), copy.isP1Turn(), selected);
-		
-		update();
+	public void cancelLastSelection() {
+		selected = null;
 	}
 	
 	/**
-	 * Checks if a selected point is valid in the context of the current
-	 * player's turn.
-	 * 
-	 * @param b			the current board.
-	 * @param isP1Turn	the flag indicating if it is player 1's turn.
-	 * @param selected	the point to test.
-	 * @return true if and only if the selected point is a checker that would
-	 * be allowed to make a move in the current turn.
+	 * Cancel last selection (if any).
 	 */
-	private boolean isValidSelection(Board b, boolean isP1Turn, Point selected) {
-
-		// Trivial cases
-		int i = Board.toIndex(selected), id = b.get(i);
-		if (id == Board.EMPTY || id == Board.INVALID) { // no checker here
-			return false;
-		} else if(isP1Turn ^ (id == Board.BLACK_CHECKER ||
-				id == Board.BLACK_KING)) { // wrong checker
-			return false;
-		} else if (!b.getPieceSkips(i).isEmpty()) { // skip available
-			return true;
-		} else if (b.getPieceMoves(i).isEmpty()) { // no moves
-			return false;
-		}
-		
-		// Determine if there is a skip available for another checker
-		List<Point> points = b.find(
-				isP1Turn? Board.BLACK_CHECKER : Board.WHITE_CHECKER);
-		points.addAll(b.find(
-				isP1Turn? Board.BLACK_KING : Board.WHITE_KING));
-		for (Point p : points) {
-			int checker = Board.toIndex(p);
-			if (checker == i) {
-				continue;
-			}
-			if (!b.getPieceSkips(checker).isEmpty()) {
-				return false;
-			}
-		}
-
-		return true;
+	public Point getLastSelection() {
+		return selected;
 	}
-
+	
+	/**
+	 * Cancel last selection (if any).
+	 */
+	public void setLastSelection(Point p) {
+		selected = p;
+	}
+	
+	/**
+	 * Set tiles id visibility
+	 */
+	public void setTileIdVisibiliy(boolean isVisible) {
+		showTilesId = isVisible;
+		repaint();
+	}
+	
+	/**
+	 * Set last selection as valid (if any).
+	 */
+	public void setLastSelectionValid(boolean selectionValid) {
+		this.selectionValid = selectionValid;
+	}
+	
 	/**
 	 * The {@code ClickListener} class is responsible for responding to click
 	 * events on the checker board component. It uses the coordinates of the
 	 * mouse relative to the location of the checker board component.
 	 */
 	private class ClickListener implements ActionListener {
-
+		
 		@Override
 		public void actionPerformed(ActionEvent e) {
-
 			// Get the new mouse coordinates and handle the click
-			Point m = CheckerBoard.this.getMousePosition();
-			if (m != null) {
-				handleClick(m.x, m.y);
+			Point p = CheckerBoard.this.getMousePosition();
+			if (p != null) {
+				int x = p.x;
+				int y = p.y;
+				// Determine what square (if any) was selected
+				final int W = getWidth(), H = getHeight();
+				final int DIM = W < H ? W : H, BOX_SIZE = (DIM - 2 * PADDING) / 8;
+				final int OFFSET_X = (W - BOX_SIZE * 8) / 2;
+				final int OFFSET_Y = (H - BOX_SIZE * 8) / 2;
+				x = (x - OFFSET_X) / BOX_SIZE;
+				y = (y - OFFSET_Y) / BOX_SIZE;
+				Point sel = new Point(x, y);
+				window.clickOnBoard(sel);
 			}
 		}
 	}
