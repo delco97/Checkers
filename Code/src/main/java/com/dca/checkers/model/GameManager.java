@@ -5,7 +5,10 @@ import com.dca.checkers.ui.OptionPanel;
 
 import java.awt.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 
 public class GameManager extends Thread {
 	
@@ -61,6 +64,23 @@ public class GameManager extends Thread {
 	 */
 	private static final int DELAY = 1000;
 	
+	/**
+	 * The history of the game
+	 */
+	private List<GameState> history;
+	
+	/**
+	 * Track the current game state position in history
+	 */
+	private int curHistoryIndex;
+	
+	/**
+	 * Track the last valid index in history.
+	 * When a some undos are performed and a new move is taken, all
+	 * state saved in history are no more useful.
+	 */
+	private int lastIndexValid;
+	
 	public GameManager(GameState gameState, CheckerBoard boardUI, OptionPanel opt) {
 		this.gameState = new GameState();
 		this.player1 = opt.getPlayer1();
@@ -72,6 +92,10 @@ public class GameManager extends Thread {
 		this.isReadyToStart = true;
 		this.isOnGoing = false;
 		this.isOver = false;
+		this.curHistoryIndex = 0;
+		this.lastIndexValid = 0;
+		this.history = new ArrayList<>();
+		this.history.add(gameState.copy());
 		//Set UI
 		updateUI();
 	}
@@ -127,9 +151,41 @@ public class GameManager extends Thread {
 			}
 			currentPlayer.updateGame(gameState);
 			waitPlayerChoice(currentPlayer);
+			addHistory(gameState.copy());
 			updateUI();
 		}
 		gameOver();
+	}
+	
+	private void addHistory(GameState g) {
+		if (curHistoryIndex < history.size()) {
+			history.add(++curHistoryIndex, g);
+		} else { //curHistoryIndex == history.size()
+			history.add(g);
+			curHistoryIndex++;
+		}
+		lastIndexValid = curHistoryIndex;
+	}
+	
+	/**
+	 * Redo the last move if any
+	 */
+	public void redo() {
+		if (redoIsPossible()) {
+			gameState.setGameState(history.get(++curHistoryIndex).getGameState());
+			updateUI();
+		}
+		
+	}
+	
+	/**
+	 * Undo the last move if any
+	 */
+	public void undo() {
+		if (undoIsPossible()) {
+			gameState.setGameState(history.get(--curHistoryIndex).getGameState());
+			updateUI();
+		}
 	}
 	
 	synchronized private void waitPlayerChoice(Player currentPlayer) {
@@ -219,7 +275,11 @@ public class GameManager extends Thread {
 		this.isReadyToStart = true;
 		this.isOnGoing = false;
 		this.isOver = false;
-		gameState.restart();
+		this.gameState.restart();
+		this.curHistoryIndex = 0;
+		this.history = new ArrayList<>();
+		this.history.add(gameState.copy());
+		this.lastIndexValid = 0;
 		updateUI();
 	}
 	
@@ -283,6 +343,8 @@ public class GameManager extends Thread {
 		opt.resumeBtn.setEnabled(false);
 		opt.pauseBtn.setEnabled(true);
 		opt.resetBtn.setEnabled(false);
+		opt.undoBtn.setEnabled(false);
+		opt.redoBtn.setEnabled(false);
 	}
 	
 	synchronized private void setUIReadyToStart() {
@@ -293,6 +355,8 @@ public class GameManager extends Thread {
 		opt.resumeBtn.setEnabled(false);
 		opt.pauseBtn.setEnabled(false);
 		opt.resetBtn.setEnabled(false);
+		opt.undoBtn.setEnabled(false);
+		opt.redoBtn.setEnabled(false);
 	}
 	
 	synchronized private void setUIPaused() {
@@ -303,6 +367,22 @@ public class GameManager extends Thread {
 		opt.resumeBtn.setEnabled(true);
 		opt.pauseBtn.setEnabled(false);
 		opt.resetBtn.setEnabled(true);
+		opt.undoBtn.setEnabled(undoIsPossible());
+		opt.redoBtn.setEnabled(redoIsPossible());
+	}
+	
+	/**
+	 * Check if it's currently possible to perform an undo
+	 */
+	private boolean undoIsPossible() {
+		return curHistoryIndex > 0;
+	}
+	
+	/**
+	 * Check if it's currently possible to perform a redo
+	 */
+	private boolean redoIsPossible() {
+		return curHistoryIndex < lastIndexValid;
 	}
 	
 	synchronized private void setUIOver() {

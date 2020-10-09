@@ -18,7 +18,7 @@ public class CheckersWindow extends JFrame {
 	private static final long serialVersionUID = 8782122389400590079L;
 	
 	/** The default width for the checkers window. */
-	public static final int DEFAULT_WIDTH = 500;
+	public static final int DEFAULT_WIDTH = 520;
 	
 	/** The default height for the checkers window. */
 	public static final int DEFAULT_HEIGHT = 825;
@@ -38,7 +38,6 @@ public class CheckersWindow extends JFrame {
 	 * Reference to the option panel
 	 */
 	private OptionPanel opts;
-	
 	
 	public CheckersWindow() {
 		this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_TITLE);
@@ -141,6 +140,20 @@ public class CheckersWindow extends JFrame {
 	 */
 	public void setShowNextMoves(boolean show) {
 		board.setShowNextMoves(show);
+	}
+	
+	/**
+	 * Undo the last move
+	 */
+	public void undoMove() {
+		gameManager.undo();
+	}
+	
+	/**
+	 * Redo the last move
+	 */
+	public void redoMove() {
+		gameManager.redo();
 	}
 	
 }

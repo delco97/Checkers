@@ -48,6 +48,16 @@ public class OptionPanel extends JPanel {
 	 */
 	public JButton pauseBtn;
 	
+	/**
+	 * The button that when clicked, undo the last move.
+	 */
+	public JButton undoBtn;
+	
+	/**
+	 * The button that when clicked, redo the last move.
+	 */
+	public JButton redoBtn;
+	
 	/** The combo box that changes what type of player player 1 is. */
 	public JComboBox<String> player1Opts;
 
@@ -92,6 +102,8 @@ public class OptionPanel extends JPanel {
 		this.resumeBtn = new JButton("Resume");
 		this.pauseBtn = new JButton("Pause");
 		this.resetBtn = new JButton("Reset");
+		this.undoBtn = new JButton("Undo");
+		this.redoBtn = new JButton("Redo");
 		this.player1Opts = new JComboBox<>(playerTypeOpts);
 		this.player2Opts = new JComboBox<>(playerTypeOpts);
 		this.cbTilesId = new JCheckBox("Show tiles IDs", true);
@@ -104,6 +116,8 @@ public class OptionPanel extends JPanel {
 		this.resumeBtn.addActionListener(ol);
 		this.pauseBtn.addActionListener(ol);
 		this.resetBtn.addActionListener(ol);
+		this.undoBtn.addActionListener(ol);
+		this.redoBtn.addActionListener(ol);
 		this.player1Opts.addActionListener(ol);
 		this.player2Opts.addActionListener(ol);
 		this.cbTilesId.addActionListener(ol);
@@ -145,6 +159,8 @@ public class OptionPanel extends JPanel {
 		pan4.add(resumeBtn);
 		pan4.add(pauseBtn);
 		pan4.add(resetBtn);
+		pan4.add(undoBtn);
+		pan4.add(redoBtn);
 		pan5.add(cbTilesId);
 		pan6.add(cbShowMovablePieces);
 		pan7.add(cbShowNextMoves);
@@ -263,6 +279,10 @@ public class OptionPanel extends JPanel {
 				window.setShowMovablePieces(cbShowMovablePieces.isSelected());
 			} else if (src == cbShowNextMoves) {
 				window.setShowNextMoves(cbShowNextMoves.isSelected());
+			} else if (src == undoBtn) {
+				window.undoMove();
+			} else if (src == redoBtn) {
+				window.redoMove();
 			}
 		}
 	}
