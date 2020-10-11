@@ -2,12 +2,9 @@
 package com.dca.checkers.model;
 
 
-import com.dca.checkers.ai.State;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * The {@code GameState} class represents a game of checkers and ensures that all
@@ -160,6 +157,9 @@ public class GameState implements State {
 		return maxNumMovesForDraw - cntMovesFromLastSkip;
 	}
 	
+	/**
+	 * Get the move (startIndex, endIndex) if exists.
+	 */
 	private Move getMove(int startIndex, int endIndex) {
 		List<Move> moves = getAllMoves();
 		for (Move m : moves) {
@@ -174,7 +174,7 @@ public class GameState implements State {
 	public boolean hasKing() {
 		List<Point> pieces = getPlayerPieces(true);
 		pieces.addAll(getPlayerPieces(false));
-		int id = -1;
+		int id;
 		for (Point p : pieces) {
 			id = board.get(Board.toIndex(p));
 			if (id == Board.WHITE_KING || id == Board.BLACK_KING) return true;
@@ -286,10 +286,18 @@ public class GameState implements State {
 		//return board.isValidMove(isP1Turn(), startIndex, endIndex, getSkipIndex());
 	}
 	
+	/**
+	 * Check if it's player 1 turn.
+	 * @return true if is Player 1 turn, false otherwise.
+	 */
 	public boolean isP1Turn() {
 		return isP1Turn;
 	}
 	
+	/**
+	 * Set if it's player 1 turn or not.
+	 * @param isP1Turn the flag to use to set the turn.
+	 */
 	public void setP1Turn(boolean isP1Turn) {
 		this.isP1Turn = isP1Turn;
 	}
@@ -365,12 +373,16 @@ public class GameState implements State {
 	/**
 	 * Check if the selected tiles startIndex has at least one move
 	 *
-	 * @return
+	 * @return true if piece on tile startIndex has at least one move.
 	 */
 	public boolean hasMove(int startIndex) {
 		return getAllMoves(startIndex).size() > 0;
 	}
 	
+	/**
+	 * Check if the point p has at least one move available.
+	 * @param p the point on the board to check.
+	 */
 	public boolean hasMove(Point p) {
 		return hasMove(Board.toIndex(p));
 	}
@@ -416,6 +428,10 @@ public class GameState implements State {
 		return board.getPieceSkips(startIndex);
 	}
 	
+	/**
+	 * Get the index of last skip.
+	 * @return the index of last skip.
+	 */
 	public int getSkipIndex() {
 		return skipIndex;
 	}
@@ -484,7 +500,9 @@ public class GameState implements State {
 	}
 	
 	/**
-	 * Static evaluation of the current state for the current player perspective.
+	 * Static evaluation of the current state from player 1 perspective if evalForP1 == true; otherwise
+	 * eval it from player 2 perspective.
+	 * @param evalForP1 the flag used to decide if current state must be evaluated for player 1 or player 2.
 	 */
 	@Override
 	public double value(boolean evalForP1) {
@@ -544,7 +562,7 @@ public class GameState implements State {
 	 * @return current state game value for player 1 or player 2.
 	 */
 	private double stateValue2(boolean evalForP1) {
-		double value = 0;
+		double value;
 		final double W_CHECKER_PLAYER_SIDE = 5;
 		final double W_CHECKER_OPPONENT_SIDE = 7;
 		final double W_KING = 10;
@@ -611,6 +629,10 @@ public class GameState implements State {
 		}
 	}
 	
+	/**
+	 * Get list of point on the board corresponding to pieces of player 1 if isP1 == true; otherwise for player 2.
+	 * @return the list of point on the board of the indicated player.
+	 */
 	private List<Point> getPlayerPieces(boolean isP1) {
 		List<Point> pieces;
 		if(isP1) {

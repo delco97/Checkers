@@ -9,9 +9,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
+/**
+ * The {@code GameManager} represents a sort of referee for a Checker game.
+ * It is the joint point between the UI and logic part of the application and it runs on its dedicated thread.
+ */
 public class GameManager extends Thread {
 	
+	/**
+	 * Reference to thread instantiated for GameManager works.
+	 */
 	private Thread t;
 	
 	/**
@@ -62,7 +68,7 @@ public class GameManager extends Thread {
 	/**
 	 * The amount of milliseconds before a computer player takes a move.
 	 */
-	private static final int DELAY = 1000;
+	private int AIDelay = 1000;
 	
 	/**
 	 * The history of the game
@@ -95,7 +101,7 @@ public class GameManager extends Thread {
 		this.curHistoryIndex = 0;
 		this.lastIndexValid = 0;
 		this.history = new ArrayList<>();
-		this.history.add(gameState.copy());
+		this.history.add(this.gameState.copy());
 		//Set UI
 		updateUI();
 	}
@@ -112,16 +118,6 @@ public class GameManager extends Thread {
 		
 	}
 	
-	synchronized private void waitStart() {
-		while (!isOnGoing) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	@Override
 	public void start() {
 		if (t == null) {
@@ -130,6 +126,7 @@ public class GameManager extends Thread {
 		}
 	}
 	
+	/** Handle the game until it's over. */
 	public void handleGameplay() {
 		Player currentPlayer;
 		while (!gameState.isGameOver()) {
@@ -143,7 +140,7 @@ public class GameManager extends Thread {
 			if (!currentPlayer.isHuman()) {
 				System.out.println("Current player is not human! Wait a bit ...");
 				try {
-					Thread.sleep(DELAY);
+					Thread.sleep(AIDelay);
 				} catch (InterruptedException e) {
 					System.err.println("An error occurred during sleep.\n");
 					e.printStackTrace();
@@ -151,12 +148,16 @@ public class GameManager extends Thread {
 			}
 			currentPlayer.updateGame(gameState);
 			waitPlayerChoice(currentPlayer);
-			addHistory(gameState.copy());
+			if (currentPlayer.hasMoved()) addHistory(gameState.copy());
 			updateUI();
 		}
 		gameOver();
 	}
 	
+	/**
+	 * Add the game state g to the game history.
+	 * @param g the game state to save in history.
+	 * */
 	private void addHistory(GameState g) {
 		if (curHistoryIndex < history.size()) {
 			history.add(++curHistoryIndex, g);
@@ -168,7 +169,25 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Redo the last move if any
+	 * Check if it's currently possible to perform an undo.
+	 *
+	 * @return true if it's possible, false otherwise.
+	 */
+	private boolean undoIsPossible() {
+		return curHistoryIndex > 0;
+	}
+	
+	/**
+	 * Check if it's currently possible to perform a redo.
+	 *
+	 * @return true if it's possible, false otherwise.
+	 */
+	private boolean redoIsPossible() {
+		return curHistoryIndex < lastIndexValid;
+	}
+	
+	/**
+	 * Redo the last move if any is available.
 	 */
 	public void redo() {
 		if (redoIsPossible()) {
@@ -179,7 +198,7 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Undo the last move if any
+	 * Undo the last move if any is available.
 	 */
 	public void undo() {
 		if (undoIsPossible()) {
@@ -188,8 +207,11 @@ public class GameManager extends Thread {
 		}
 	}
 	
-	synchronized private void waitPlayerChoice(Player currentPlayer) {
-		while (!currentPlayer.hasMoved()) {
+	/**
+	 * Wait the game start.
+	 */
+	synchronized private void waitStart() {
+		while (!isOnGoing) {
 			try {
 				wait();
 			} catch (InterruptedException e) {
@@ -198,6 +220,22 @@ public class GameManager extends Thread {
 		}
 	}
 	
+	/**
+	 * Wait until a player has taken a decision for his turn (skip or move).
+	 *
+	 * @param player the player to wait.
+	 */
+	synchronized private void waitPlayerChoice(Player player) {
+		while (!(player.hasMoved() || player.hasSkipped())) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	/** Wait the game resume. */
 	private synchronized void waitResume() {
 		while (!isOnGoing) {
 			try {
@@ -208,6 +246,7 @@ public class GameManager extends Thread {
 		}
 	}
 	
+	/** Set the player 1. */
 	public void setPlayer1(Player player1) {
 		System.out.println("Player 1 set.");
 		this.player1 = (player1 == null) ? new HumanPlayer() : player1;
@@ -218,6 +257,7 @@ public class GameManager extends Thread {
 		boardUI.repaint();
 	}
 	
+	/** Set the player 2. */
 	public void setPlayer2(Player player2) {
 		System.out.println("Player 2 setted.");
 		this.player2 = (player2 == null) ? new HumanPlayer() : player2;
@@ -229,7 +269,8 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Return the player next to play
+	 * Return the next player to play.
+	 * @return the player who must take a decision.
 	 */
 	public Player getCurrentPlayer() {
 		if (gameState.isP1Turn()) return player1;
@@ -284,7 +325,7 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Start the game
+	 * Request to start the game
 	 */
 	synchronized public void startClick() {
 		writeToConsole("Game started.");
@@ -298,7 +339,7 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Resume the paused game
+	 * Request to resume the paused game
 	 */
 	synchronized public void resumeClick() {
 		writeToConsole("Game resumed.");
@@ -312,7 +353,7 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Pause the current game
+	 * Request to pause the current game
 	 */
 	synchronized public void pauseClick() {
 		writeToConsole("Game pausing...");
@@ -327,6 +368,9 @@ public class GameManager extends Thread {
 		notifyAll();
 	}
 	
+	/**
+	 * Setup for game over state.
+	 */
 	synchronized public void gameOver() {
 		writeToConsole("Game over.");
 		this.isPaused = false;
@@ -336,73 +380,69 @@ public class GameManager extends Thread {
 		updateUI();
 	}
 	
+	/** Setup UI for OnGoing state. */
 	synchronized private void setUIOnGoing() {
-		opt.player1Opts.setEnabled(false);
-		opt.player2Opts.setEnabled(false);
-		opt.startBtn.setEnabled(false);
-		opt.resumeBtn.setEnabled(false);
-		opt.pauseBtn.setEnabled(true);
-		opt.resetBtn.setEnabled(false);
-		opt.undoBtn.setEnabled(false);
-		opt.redoBtn.setEnabled(false);
+		opt.cmbPlayer1Type.setEnabled(false);
+		opt.cmbPlayer2Type.setEnabled(false);
+		opt.btnStart.setEnabled(false);
+		opt.btnResume.setEnabled(false);
+		opt.btnPause.setEnabled(true);
+		opt.btnRest.setEnabled(false);
+		opt.btnUndo.setEnabled(false);
+		opt.btnRedo.setEnabled(false);
 	}
 	
+	/** Setup UI for ReadyToStart state. */
 	synchronized private void setUIReadyToStart() {
 		writeToConsole("Press 'Start' to start a game.");
-		opt.player1Opts.setEnabled(true);
-		opt.player2Opts.setEnabled(true);
-		opt.startBtn.setEnabled(true);
-		opt.resumeBtn.setEnabled(false);
-		opt.pauseBtn.setEnabled(false);
-		opt.resetBtn.setEnabled(false);
-		opt.undoBtn.setEnabled(false);
-		opt.redoBtn.setEnabled(false);
+		opt.cmbPlayer1Type.setEnabled(true);
+		opt.cmbPlayer2Type.setEnabled(true);
+		opt.btnStart.setEnabled(true);
+		opt.btnResume.setEnabled(false);
+		opt.btnPause.setEnabled(false);
+		opt.btnRest.setEnabled(false);
+		opt.btnUndo.setEnabled(false);
+		opt.btnRedo.setEnabled(false);
 	}
 	
+	/** Setup UI for Paused state. */
 	synchronized private void setUIPaused() {
 		writeToConsole("Game is paused.");
-		opt.player1Opts.setEnabled(true);
-		opt.player2Opts.setEnabled(true);
-		opt.startBtn.setEnabled(false);
-		opt.resumeBtn.setEnabled(true);
-		opt.pauseBtn.setEnabled(false);
-		opt.resetBtn.setEnabled(true);
-		opt.undoBtn.setEnabled(undoIsPossible());
-		opt.redoBtn.setEnabled(redoIsPossible());
+		opt.cmbPlayer1Type.setEnabled(true);
+		opt.cmbPlayer2Type.setEnabled(true);
+		opt.btnStart.setEnabled(false);
+		opt.btnResume.setEnabled(true);
+		opt.btnPause.setEnabled(false);
+		opt.btnRest.setEnabled(true);
+		opt.btnUndo.setEnabled(undoIsPossible());
+		opt.btnRedo.setEnabled(redoIsPossible());
 	}
 	
-	/**
-	 * Check if it's currently possible to perform an undo
-	 */
-	private boolean undoIsPossible() {
-		return curHistoryIndex > 0;
-	}
-	
-	/**
-	 * Check if it's currently possible to perform a redo
-	 */
-	private boolean redoIsPossible() {
-		return curHistoryIndex < lastIndexValid;
-	}
-	
+	/** Setup UI for Over state. */
 	synchronized private void setUIOver() {
 		writeToConsole("Game is over.");
-		opt.player1Opts.setEnabled(true);
-		opt.player2Opts.setEnabled(true);
-		opt.startBtn.setEnabled(false);
-		opt.resumeBtn.setEnabled(false);
-		opt.pauseBtn.setEnabled(false);
-		opt.resetBtn.setEnabled(true);
+		opt.cmbPlayer1Type.setEnabled(true);
+		opt.cmbPlayer2Type.setEnabled(true);
+		opt.btnStart.setEnabled(false);
+		opt.btnResume.setEnabled(false);
+		opt.btnPause.setEnabled(false);
+		opt.btnRest.setEnabled(true);
 	}
 	
 	/**
 	 * Write a message in console.
-	 *
 	 * @param msg the message to append.
 	 */
 	private void writeToConsole(String msg) {
 		String date = new SimpleDateFormat("hh:mm:ss").format(new Date());
-		opt.txtConsole.append("[" + date + "]: " + msg + "\n");
+		opt.txtAreaConsole.append("[" + date + "]: " + msg + "\n");
+	}
+	
+	/**
+	 * Set delay for a AI move
+	 */
+	public void setDelay(int value) {
+		AIDelay = value;
 	}
 	
 }

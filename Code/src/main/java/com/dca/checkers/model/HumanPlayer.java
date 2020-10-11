@@ -10,68 +10,48 @@ import java.awt.*;
  * The {@code HumanPlayer} class represents a user of the checkers game that
  * can update the game by clicking on tiles on the board.
  */
-public class HumanPlayer extends Thread implements Player {
+public class HumanPlayer implements Player {
 	
-	private Thread t;
-	
+	/**
+	 * Flag that tells if the move has been selected by the user
+	 */
 	private boolean moveSelected;
+	
+	/** Flag that tells if the current turn must be skipped (no more wait for input) */
 	private boolean skipMove;
-	
-	@Override
-	synchronized public void run() {
-		//Wait user input or signal to skip the wait
-		moveSelected = false;
-		skipMove = false;
-		waitMoveSelection();
-	}
-	
-	@Override
-	public void start() {
-		if (t == null) {
-			t = new Thread(this);
-			t.start();
-		}
-	}
 	
 	@Override
 	public boolean isHuman() {
 		return true;
 	}
 	
-	/**
-	 * Just wait that the users select a move using the UI.
-	 */
 	@Override
 	synchronized public void updateGame(GameState gameState) {
 		moveSelected = false;
-		start();
+		skipMove = false;
 	}
 	
 	@Override
-	synchronized public boolean hasMoved() {
-		return moveSelected || skipMove;
+	synchronized public boolean hasSkipped() {
+		return skipMove;
 	}
 	
+	synchronized public boolean hasMoved() {
+		return moveSelected;
+	}
+	
+	/** Tell if the next move is skipped, */
 	synchronized public void skipNextMove() {
 		skipMove = true;
 		notifyAll();
 	}
 	
-	synchronized private void waitMoveSelection() {
-		while (!hasMoved()) {
-			try {
-				wait();
-			} catch (InterruptedException e) {
-				System.err.println("Thread interrupted");
-				e.printStackTrace();
-			}
-		}
-	}
-	
 	/**
 	 * Handle a click over the board.
 	 *
-	 * @param sel
+	 * @param curGameState the game state to update.
+	 * @param boardUI the board UI to update.
+	 * @param sel the selec poitn on the board.
 	 */
 	public synchronized void handleBoardClick(GameState curGameState, CheckerBoard boardUI, Point sel) {
 		// The gameState is over or the current player isn't human
@@ -92,7 +72,6 @@ public class HumanPlayer extends Thread implements Player {
 		// Check if the selection is valid
 		boardUI.setLastSelectionValid(curGameState.hasMove(boardUI.getLastSelection()));
 	}
-	
 	
 	@Override
 	public String toString() {

@@ -12,53 +12,63 @@ import java.util.List;
 
 /**
  * The {@code CheckerBoard} class is a graphical user interface component that
- * is capable of drawing any checkers gameState state. It also handles player turns.
- * For human players, this means interacting with and selecting tiles on the
- * checker board. For non-human players, this means using the logic implemented
- * by the specified player object itself is used.
+ * is capable of drawing any checkers gameState state.
  */
 public class CheckerBoard extends JButton {
-
+	
 	private static final long serialVersionUID = -6014690893709316364L;
 	
-	/** The number of pixels of padding between this component's border and the
-	 * actual checker board that is drawn. */
+	/**
+	 * The number of pixels of padding between this component's border and the
+	 * actual checker board that is drawn.
+	 */
 	private static final int PADDING = 16;
 	
 	/**
 	 * The gameState of checkers that is being played on this component.
+	 * The same instance is shared with {@see gameState}.
 	 */
 	private GameState gameState;
 	
-	/** The window containing this checker board UI component. */
+	/**
+	 * The window containing this checker board UI component.
+	 */
 	private CheckersWindow window;
 	
-	/** The last point that the current player selected on the checker board. */
+	/**
+	 * The last point that the current human player selected on the checker board.
+	 */
 	private Point selected;
 	
-	/** The flag to determine if the selected tile is valid for the current user */
+	/**
+	 * The flag to determine if the selected tile is valid for the current human player
+	 */
 	private boolean selectionValid;
 	
-	/** The colour of the light tiles (by default, this is white). */
-	private Color lightTile;
+	/**
+	 * The colour of the light tiles (by default, this is white).
+	 */
+	private Color colorLightTile;
 	
 	/**
 	 * Color of reachable tiles from a movable piece
 	 */
-	private Color nextTilesColor;
+	private Color colorNextTiles;
 	
 	/**
 	 * The colour of the tile id label.
 	 */
-	private Color tileIdColor;
-
-	/** The colour of the dark tiles (by default, this is black). */
-	private Color darkTile;
+	private Color colorTileId;
+	
+	/**
+	 * The colour of the dark tiles (by default, this is black).
+	 */
+	private Color colorDarkTile;
 	
 	/**
 	 * Color for a movable piece
 	 */
-	private Color movablePieceColor;
+	private Color colorMovablePiece;
 	
 	/**
 	 * Tells if the tiles id must be shown
@@ -75,11 +85,6 @@ public class CheckerBoard extends JButton {
 	 */
 	private boolean showNextTiles;
 	
-	/**
-	 * Console used to comunicate with the user.
-	 */
-	private TextArea txtConsole;
-	
 	public CheckerBoard(CheckersWindow window, GameState gameState, boolean showTilesId, boolean showMovablePieces, boolean showNextMoves) {
 		
 		// Setup the component
@@ -90,11 +95,11 @@ public class CheckerBoard extends JButton {
 		this.addActionListener(new ClickListener());
 		
 		// Setup the board settings
-		this.lightTile = new Color(254, 234, 184);
-		this.darkTile = new Color(79, 124, 38);
-		this.movablePieceColor = new Color(233, 185, 52);
-		this.tileIdColor = new Color(61, 118, 46);
-		this.nextTilesColor = new Color(58, 188, 229);
+		this.colorLightTile = new Color(254, 234, 184);
+		this.colorDarkTile = new Color(79, 124, 38);
+		this.colorMovablePiece = new Color(233, 185, 52);
+		this.colorTileId = colorLightTile;
+		this.colorNextTiles = new Color(58, 188, 229);
 		this.window = window;
 		this.showTilesId = showTilesId;
 		this.showMovablePieces = showMovablePieces;
@@ -119,38 +124,39 @@ public class CheckerBoard extends JButton {
 		final int W = getWidth(), H = getHeight();
 		final int DIM = W < H ? W : H, BOX_SIZE = (DIM - 2 * PADDING) / 8;
 		final int OFFSET_X = (W - BOX_SIZE * 8) / 2 + 5;
-		final int OFFSET_Y = (H - BOX_SIZE * 8) / 2 +5;
+		final int OFFSET_Y = (H - BOX_SIZE * 8) / 2 + 5;
 		final int CHECKER_SIZE = Math.max(0, BOX_SIZE - 2 * BOX_PADDING);
 		
 		// Draw checker board
 		g.setColor(Color.BLACK);
 		g.drawRect(OFFSET_X - 1, OFFSET_Y - 1, BOX_SIZE * 8 + 1, BOX_SIZE * 8 + 1);
-		g.setColor(lightTile);
+		g.setColor(colorLightTile);
 		g.fillRect(OFFSET_X, OFFSET_Y, BOX_SIZE * 8, BOX_SIZE * 8);
-		g.setColor(darkTile);
+		g.setColor(colorDarkTile);
 		
 		//Get all moves for the select piece (if any available) and show them if required
 		List<Move> selectedPieceMoves = gameState.getAllMoves(Board.toIndex(selected));
 		
-		for (int y = 0; y < 8; y ++) {
+		for (int y = 0; y < 8; y++) {
 			for (int x = (y + 1) % 2; x < 8; x += 2) {
-				if (showMovablePieces && isMovablePiece(x, y)) g.setColor(movablePieceColor);
-				else if (showNextTiles && containsMoveEndsIn(selectedPieceMoves, Board.toIndex(x, y))) g.setColor(nextTilesColor);
-				else g.setColor(darkTile);
+				if (showMovablePieces && isMovablePiece(x, y)) g.setColor(colorMovablePiece);
+				else if (showNextTiles && containsMoveEndsIn(selectedPieceMoves, Board.toIndex(x, y)))
+					g.setColor(colorNextTiles);
+				else g.setColor(colorDarkTile);
 				g.fillRect(OFFSET_X + x * BOX_SIZE, OFFSET_Y + y * BOX_SIZE, BOX_SIZE, BOX_SIZE);
 			}
 		}
 		
 		// Highlight the selected tile if valid
 		if (Board.isValidPoint(selected)) {
-			g.setColor(selectionValid? Color.GREEN : Color.RED);
+			g.setColor(selectionValid ? Color.GREEN : Color.RED);
 			g.fillRect(OFFSET_X + selected.x * BOX_SIZE, OFFSET_Y + selected.y * BOX_SIZE, BOX_SIZE, BOX_SIZE);
 		}
 		
 		// Draw the checkers
 		int balckCount = 0;
 		Board b = gameState.getBoard();
-		for (int y = 0; y < 8; y ++) {
+		for (int y = 0; y < 8; y++) {
 			int cy = OFFSET_Y + y * BOX_SIZE + BOX_PADDING;
 			for (int x = (y + 1) % 2; x < 8; x += 2) {
 				int id = b.get(x, y);
@@ -158,7 +164,7 @@ public class CheckerBoard extends JButton {
 				
 				//Set tile id
 				if (showTilesId) {
-					g.setColor(lightTile);
+					g.setColor(colorTileId);
 					g.drawString(balckCount + "", cx - 7, cy + 2);
 					balckCount++;
 				}
@@ -242,7 +248,6 @@ public class CheckerBoard extends JButton {
 		
 		// Draw number of moves to draw
 		msg = "Moves to draw: " + gameState.getNumMovesBeforeDraw();
-		width = g.getFontMetrics().stringWidth(msg);
 		g.setColor(Color.BLACK);
 		g.drawString(msg, W / 2 + 90, OFFSET_Y - 5);
 		
@@ -273,6 +278,12 @@ public class CheckerBoard extends JButton {
 		}
 	}
 	
+	/**
+	 * Check if at least one of the moves in selectedPieceMoves ends in endIndex.
+	 * @param selectedPieceMoves the moves to check.
+	 * @param endIndex end index to find.
+	 * @return true if at least one move ends in endIndex.
+	 */
 	private boolean containsMoveEndsIn(List<Move> selectedPieceMoves, int endIndex) {
 		for (Move m : selectedPieceMoves) {
 			if (m.getEndIndex() == endIndex) return true;
@@ -281,10 +292,13 @@ public class CheckerBoard extends JButton {
 	}
 	
 	/**
-	 * Tell if a piece can be moved
+	 * Tell if a piece, in position (x,y) on the board, can be moved.
+	 * @param x the x position of the piece.
+	 * @param y the y position of the piece.
+	 * @return true if at least one move is currently available for piece in position (x,y); false otherwise.
 	 */
 	private boolean isMovablePiece(int x, int y) {
-		return gameState.hasMove(new Point(x,y));
+		return gameState.hasMove(new Point(x, y));
 	}
 	
 	/**
@@ -296,6 +310,7 @@ public class CheckerBoard extends JButton {
 	
 	/**
 	 * Cancel last selection (if any).
+	 * @return the las selected point on the board.
 	 */
 	public Point getLastSelection() {
 		return selected;
@@ -303,21 +318,24 @@ public class CheckerBoard extends JButton {
 	
 	/**
 	 * Cancel last selection (if any).
+	 * @param p the new selected tile.
 	 */
 	public void setLastSelection(Point p) {
 		selected = p;
 	}
 	
 	/**
-	 * Set tiles id visibility
+	 * Set tiles id visibility.
+	 * @param isVisible the new value to set for tiles id visibility flag.
 	 */
-	public void setTileIdVisibiliy(boolean isVisible) {
+	public void setTileIdVisibility(boolean isVisible) {
 		showTilesId = isVisible;
 		repaint();
 	}
 	
 	/**
 	 * Set last selection as valid (if any).
+	 * @param selectionValid the flag that tells if the last selection is valid (true) or not (false).
 	 */
 	public void setLastSelectionValid(boolean selectionValid) {
 		this.selectionValid = selectionValid;
@@ -325,6 +343,7 @@ public class CheckerBoard extends JButton {
 	
 	/**
 	 * Show (show == true) or hide (show == false) pieces that can be moved.
+	 * @param show the new value for the flag,
 	 */
 	public void setShowMovablePieces(boolean show) {
 		showMovablePieces = show;
@@ -333,6 +352,7 @@ public class CheckerBoard extends JButton {
 	
 	/**
 	 * Show (show == true) or hide (show == false) next moves of the selected piece.
+	 * @param show the new value for the flag,
 	 */
 	public void setShowNextMoves(boolean show) {
 		showNextTiles = show;
@@ -364,5 +384,7 @@ public class CheckerBoard extends JButton {
 				window.clickOnBoard(sel);
 			}
 		}
+		
 	}
+	
 }

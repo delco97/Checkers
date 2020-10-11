@@ -13,10 +13,17 @@ import java.util.List;
  */
 public class AIMinMax implements Player {
 	
+	/**
+	 * Depth of the tree to build.
+	 */
 	private static final int depth = 7;
 	
+	/** Depth of the tree to build. */
 	private boolean isBlack;
 	
+	/**
+	 * Flag that tells if the move has been performed.
+	 */
 	private boolean moveDone;
 	
 	
@@ -42,6 +49,11 @@ public class AIMinMax implements Player {
 	}
 	
 	@Override
+	public boolean hasSkipped() {
+		return false;
+	}
+	
+	@Override
 	public boolean hasMoved() {
 		return moveDone;
 	}
@@ -63,7 +75,7 @@ public class AIMinMax implements Player {
 	 * @param g the game state to evaluate
 	 * @param depth the maximum recursion depth
 	 * @param isMaxPlayer flag that tells if the current player is max (true) or min (false)
-	 * @return
+	 * @return the result of min max algorithm.
 	 */
 	private MinMaxResult minMax(GameState g, Move m, int depth, boolean isMaxPlayer) {
 		if(depth == 0 || g.isGameOver()) return new MinMaxResult(m, g.value(isBlack));

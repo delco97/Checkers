@@ -11,9 +11,6 @@ import java.util.Objects;
  */
 public class Move {
 	
-	/** The weight corresponding to an invalid move. */
-	public static final double WEIGHT_INVALID = Double.NEGATIVE_INFINITY;
-	
 	/**
 	 * The startClick index of the move.
 	 */
@@ -25,8 +22,6 @@ public class Move {
 	/** The move type */
 	private MoveType type;
 	
-	/** The weight associated with the move. */
-	private double weight;
 	
 	public Move(int startIndex, int endIndex, MoveType type) {
 		setStartIndex(startIndex);
@@ -75,18 +70,6 @@ public class Move {
 	public void setEnd(Point end) {
 		setEndIndex(Board.toIndex(end));
 	}
-
-	public double getWeight() {
-		return weight;
-	}
-
-	public void setWeight(double weight) {
-		this.weight = weight;
-	}
-	
-	public void changeWeight(double delta) {
-		this.weight += delta;
-	}
 	
 	@Override
 	public boolean equals(Object o) {
@@ -103,7 +86,6 @@ public class Move {
 	
 	@Override
 	public String toString() {
-		return getClass().getSimpleName() + "[startIndex=" + startIndex + ", "
-				+ "endIndex=" + endIndex + ", weight=" + weight + "]";
+		return getClass().getSimpleName() + "[startIndex=" + startIndex + ", " + "endIndex=" + endIndex;
 	}
 }

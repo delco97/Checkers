@@ -1,4 +1,4 @@
-package com.dca.checkers.ai;
+package com.dca.checkers.model;
 
 public interface State extends Cloneable {
 

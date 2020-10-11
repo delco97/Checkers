@@ -238,7 +238,7 @@ public class Board {
 	 *
 	 * @param target	the target value to update.
 	 * @param bit		the bit to update (from 0 to 31 inclusive).
-	 * @param set		true to set the bit, false to clear the bit.
+	 * @param set        true to set  the bit, false to clear the bit.
 	 * @return the updated target value with the bit set or cleared.
 	 * @see #getBit(int, int)
 	 */
@@ -643,11 +643,8 @@ public class Board {
 		
 		//Check that skip is not performed by a normal checkers versus a king
 		return (id != Board.WHITE_CHECKER || midID != Board.BLACK_KING) && (id != Board.BLACK_CHECKER || midID != Board.WHITE_KING);
-		//TODO: add ita checks
-		//
 		
 	}
-	
 	
 	/**
 	 * Adds points that could potentially result in moves/skips.
@@ -675,11 +672,11 @@ public class Board {
 	
 	@Override
 	public String toString() {
-		String obj = getClass().getName() + "[";
+		StringBuilder obj = new StringBuilder(getClass().getName() + "[");
 		for (int i = 0; i < 31; i ++) {
-			obj += get(i) + ", ";
+			obj.append(get(i)).append(", ");
 		}
-		obj += get(31);
+		obj.append(get(31));
 		
 		return obj + "]";
 	}

@@ -94,10 +94,11 @@ public class CheckersWindow extends JFrame {
 	}
 	
 	/**
-	 * Set tiles id visibility
+	 * Set tiles id visibility.
+	 * @param isVisible the new value to set for tiles id visibility flag.
 	 */
-	public void setTileIdVisibiliy(boolean isVisible) {
-		board.setTileIdVisibiliy(isVisible);
+	public void setTileIdVisibility(boolean isVisible) {
+		board.setTileIdVisibility(isVisible);
 	}
 	
 	/**
@@ -130,6 +131,7 @@ public class CheckersWindow extends JFrame {
 	
 	/**
 	 * Show (show == true) or hide (show == false) pieces that can be moved.
+	 * @param show the new value for the flag,
 	 */
 	public void setShowMovablePieces(boolean show) {
 		board.setShowMovablePieces(show);
@@ -137,6 +139,7 @@ public class CheckersWindow extends JFrame {
 	
 	/**
 	 * Show (show == true) or hide (show == false) next moves of the selected piece.
+	 * @param show the new value for the flag,
 	 */
 	public void setShowNextMoves(boolean show) {
 		board.setShowNextMoves(show);
@@ -154,6 +157,13 @@ public class CheckersWindow extends JFrame {
 	 */
 	public void redoMove() {
 		gameManager.redo();
+	}
+	
+	/**
+	 * Set delay for a AI move
+	 */
+	public void setDelay(int value) {
+		gameManager.setDelay(value);
 	}
 	
 }

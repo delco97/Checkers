@@ -1,4 +1,4 @@
-package com.dca.checkers.Utilities;
+package com.dca.checkers.utilities;
 
 import java.awt.Component;
 import java.awt.event.*;
@@ -6,7 +6,7 @@ import javax.swing.*;
 import javax.swing.text.*;
 
 /**
- * The SmartScroller will attempt to keep the viewport positioned based on
+ * The {@code SmartScroller} will attempt to keep the viewport positioned based on
  * the users interaction with the scrollbar. The normal behaviour is to keep
  * the viewport positioned to see new data as it is dynamically added.
  * <p>
@@ -28,11 +28,11 @@ import javax.swing.text.*;
  */
 public class SmartScroller implements AdjustmentListener {
 	
-	public final static int HORIZONTAL = 0;
-	public final static int VERTICAL = 1;
+	private final static int HORIZONTAL = 0;
+	private final static int VERTICAL = 1;
 	
-	public final static int START = 0;
-	public final static int END = 1;
+	private final static int START = 0;
+	private final static int END = 1;
 	
 	private int viewportPosition;
 	
@@ -100,11 +100,7 @@ public class SmartScroller implements AdjustmentListener {
 	
 	@Override
 	public void adjustmentValueChanged(final AdjustmentEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				checkScrollBar(e);
-			}
-		});
+		SwingUtilities.invokeLater(() -> checkScrollBar(e));
 	}
 	
 	/*

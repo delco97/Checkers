@@ -10,6 +10,9 @@ import java.util.List;
  */
 public class AIRandomPlayer implements Player {
 	
+	/**
+	 * Flag that tells if the move has been performed.
+	 */
 	private boolean moveDone;
 	
 	@Override
@@ -37,7 +40,12 @@ public class AIRandomPlayer implements Player {
 	}
 	
 	@Override
-	synchronized public boolean hasMoved() {
+	public boolean hasSkipped() {
+		return false;
+	}
+	
+	@Override
+	public boolean hasMoved() {
 		return moveDone;
 	}
 	

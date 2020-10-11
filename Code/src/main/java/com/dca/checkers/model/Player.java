@@ -6,7 +6,7 @@
 package com.dca.checkers.model;
 
 /**
- * The {@code Player} class is an abstract class that represents a player in a
+ * The {@code Player} class is an interface class that represents a player in a
  * game of checkers.
  */
 public interface Player {
@@ -25,14 +25,21 @@ public interface Player {
 	 * is a move available that is multiple skips, it may be performed at once
 	 * by this method or one skip at a time.
 	 *
-	 * @param gameState    the gameState to update.
+	 * @param gameState the game state to update.
 	 */
 	void updateGame(GameState gameState);
 	
 	/**
-	 * Tells if the player has moved.
+	 * Tells if the player has skipped its turn.
 	 *
-	 * @return
+	 * @return true if the player has skipped his turn, false otherwise.
+	 */
+	boolean hasSkipped();
+	
+	/**
+	 * Tells if the player has moved
+	 *
+	 * @return true if the player has moved, false otherwise.
 	 */
 	boolean hasMoved();
 	
