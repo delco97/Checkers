@@ -6,7 +6,6 @@
 
 package com.dca.checkers.ui;
 
-import com.dca.checkers.utilities.SmartScroller;
 import com.dca.checkers.ai.AIMinMax;
 import com.dca.checkers.ai.AIRandomPlayer;
 import com.dca.checkers.model.HumanPlayer;
