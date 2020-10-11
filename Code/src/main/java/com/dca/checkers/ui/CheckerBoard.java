@@ -26,7 +26,7 @@ public class CheckerBoard extends JButton {
 	
 	/**
 	 * The gameState of checkers that is being played on this component.
-	 * The same instance is shared with {@see gameState}.
+	 * The same instance is shared with @see gameState.
 	 */
 	private GameState gameState;
 	

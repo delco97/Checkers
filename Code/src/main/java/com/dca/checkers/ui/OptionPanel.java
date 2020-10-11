@@ -185,14 +185,16 @@ public class OptionPanel extends JPanel {
 	}
 	
 	/**
-	 * Get the type of player select for player 1
+	 * Get the type of player select for player 1.
+	 * @return the player 1 object.
 	 */
 	public Player getPlayer1() {
 		return getPlayer(cmbPlayer1Type);
 	}
 	
 	/**
-	 * Get the type of player select for player 2
+	 * Get the type of player select for player 2.
+	 * @return the player 2 object.
 	 */
 	public Player getPlayer2() {
 		return getPlayer(cmbPlayer2Type);
@@ -227,27 +229,23 @@ public class OptionPanel extends JPanel {
 	
 	/**
 	 * Get the flag that tells tiles id must be shown or not.
+	 * @return true if the flag that tells tiles id must be shown or not is checked, otherwise return false.
 	 */
 	public boolean getTilesIdVisibility() {
 		return chbTilesId.isSelected();
 	}
 	
 	/**
-	 * Return the console object.
-	 */
-	public JTextArea getConsole() {
-		return txtAreaConsole;
-	}
-	
-	/**
-	 * Get the flag that tells if movable pieces must be shown
+	 * Get the flag that tells if movable pieces must be shown.
+	 * @return true if the flag that tells if movable pieces must be shown is checked, otherwise return false.
 	 */
 	public boolean getShowMovablePieces() {
 		return chbShowMovablePieces.isSelected();
 	}
 	
 	/**
-	 * Get the flag that tells if movable pieces must be shown
+	 * Get the flag that tells if moves of movable pieces must be shown.
+	 * @return true if the flag that tells if moves of movable pieces must be shown is checked, otherwise return false.
 	 */
 	public boolean getShowNextMoves() {
 		return chbShowNextMoves.isSelected();

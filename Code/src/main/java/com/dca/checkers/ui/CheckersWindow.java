@@ -160,7 +160,8 @@ public class CheckersWindow extends JFrame {
 	}
 	
 	/**
-	 * Set delay for a AI move
+	 * Set delay for a AI move.
+	 * @param value the new delay value.
 	 */
 	public void setDelay(int value) {
 		gameManager.setDelay(value);

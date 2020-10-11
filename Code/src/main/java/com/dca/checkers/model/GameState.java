@@ -151,7 +151,8 @@ public class GameState implements State {
 	}
 	
 	/**
-	 * Get number of normal moves (no skip) left to reach a draw
+	 * Get number of normal moves (no skip) left to reach a draw.
+	 * @return the number of normal moves (no skip) left to reach a draw.
 	 */
 	public int getNumMovesBeforeDraw() {
 		return maxNumMovesForDraw - cntMovesFromLastSkip;
@@ -169,7 +170,8 @@ public class GameState implements State {
 	}
 	
 	/**
-	 * Check if at least one kinh is present on the board
+	 * Check if at least one king is present on the board.
+	 * @return true if at least one king is present on the board, otherwise false.
 	 */
 	public boolean hasKing() {
 		List<Point> pieces = getPlayerPieces(true);
@@ -202,6 +204,7 @@ public class GameState implements State {
 	
 	/**
 	 * Get the current game result.
+	 * @return the current game result.
 	 */
 	public MatchResult getResult() {
 		if (isDraw()) return MatchResult.DRAW;
@@ -359,7 +362,7 @@ public class GameState implements State {
 	
 	/**
 	 * Gets all the available moves starting from startIndex.
-	 *
+	 * @param startIndex the start index.
 	 * @return a list of valid moves that the player can make with piece in startIndex.
 	 */
 	public List<Move> getAllMoves(int startIndex) {
@@ -372,7 +375,7 @@ public class GameState implements State {
 	
 	/**
 	 * Check if the selected tiles startIndex has at least one move
-	 *
+	 * @param startIndex the start index.
 	 * @return true if piece on tile startIndex has at least one move.
 	 */
 	public boolean hasMove(int startIndex) {
@@ -382,6 +385,7 @@ public class GameState implements State {
 	/**
 	 * Check if the point p has at least one move available.
 	 * @param p the point on the board to check.
+	 * @return true if piece on tile startIndex has at least one move.
 	 */
 	public boolean hasMove(Point p) {
 		return hasMove(Board.toIndex(p));

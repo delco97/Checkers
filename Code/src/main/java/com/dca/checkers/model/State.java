@@ -1,7 +1,10 @@
 package com.dca.checkers.model;
 
+/**
+ * The {@code State} class interface for game state classes.
+ */
 public interface State extends Cloneable {
-
+    
     /**
      * Returns the value of the state.
      * A value of 0 means the goal has been reached

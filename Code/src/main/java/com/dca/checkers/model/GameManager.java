@@ -246,7 +246,11 @@ public class GameManager extends Thread {
 		}
 	}
 	
-	/** Set the player 1. */
+	/**
+	 * Set the player 1.
+	 *
+	 * @param player1 the new player 1.
+	 */
 	public void setPlayer1(Player player1) {
 		System.out.println("Player 1 set.");
 		this.player1 = (player1 == null) ? new HumanPlayer() : player1;
@@ -257,7 +261,10 @@ public class GameManager extends Thread {
 		boardUI.repaint();
 	}
 	
-	/** Set the player 2. */
+	/**
+	 * Set the player 2.
+	 * @param player2 the new player 2.
+	 */
 	public void setPlayer2(Player player2) {
 		System.out.println("Player 2 setted.");
 		this.player2 = (player2 == null) ? new HumanPlayer() : player2;
@@ -439,7 +446,8 @@ public class GameManager extends Thread {
 	}
 	
 	/**
-	 * Set delay for a AI move
+	 * Set delay for a AI move.
+	 * @param value the new value for AI delay.
 	 */
 	public void setDelay(int value) {
 		AIDelay = value;
