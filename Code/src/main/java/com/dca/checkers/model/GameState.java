@@ -483,7 +483,7 @@ public class GameState implements State {
 		int n = state.length();
 		for (int i = 0; i < 32 && i < n; i ++) {
 			try {
-				int id = Integer.parseInt("" + state.charAt(i));
+				byte id = Byte.parseByte("" + state.charAt(i));
 				this.board.set(i, id);
 			} catch (NumberFormatException e) {
 				System.err.println("Impossible to parse character: " + i);

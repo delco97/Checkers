@@ -8,19 +8,10 @@ import java.util.List;
 /**
  * The {@code Board} class represents a game state for checkers. A standard
  * checker board is 8 x 8 (64) tiles, alternating white/black. Checkers are
- * only allowed on black tiles and can therefore only move diagonally. The
- * board is optimized to use as little memory space as possible and only uses
- * 3 integers to represent the state of the board (3 bits for each of the 32
- * tiles). This makes it fast and efficient to {@link #copy()} the board state.
- * <p>
- * This class uses integers to represent the state of each tile and
- * specifically uses these constants for IDs: {@link #EMPTY},
- * {@link #BLACK_CHECKER}, {@link #WHITE_CHECKER}, {@link #BLACK_KING},
- * {@link #WHITE_KING}.
- * <p>
+ * only allowed on black tiles and can therefore only move diagonally.
  * Tile states can be retrieved through {@link #get(int)} and
  * {@link #get(int, int)}. Tile states can be set through
- * {@link #set(int, int)} and {@link #set(int, int, int)}. The entire game can
+ * {@link #set(int, byte)} and {@link #set(int, int, byte)}. The entire game can
  * be reset with {@link #reset()}.
  */
 public class Board {
@@ -31,25 +22,25 @@ public class Board {
 	private final int nCols = 8;
 	
 	/** An ID indicating a point was not on the checker board. */
-	public static final int INVALID = -1;
+	public static final byte INVALID = -1;
 	
 	/** The ID of an empty checker board tile. */
-	public static final int EMPTY = 0b000;
+	public static final byte EMPTY = 0b000;
 	
 	/** The ID of a white checker in the checker board. */
-	public static final int BLACK_CHECKER = 0b110; //4 * 1 + 2 * 1 + 1 * 0;
+	public static final byte BLACK_CHECKER = 0b110; //4 * 1 + 2 * 1 + 1 * 0 = 6;
 	
 	/** The ID of a white checker in the checker board. */
-	public static final int WHITE_CHECKER = 0b100; //4 * 1 + 2 * 0 + 1 * 0;
+	public static final byte WHITE_CHECKER = 0b100; //4 * 1 + 2 * 0 + 1 * 0 = 4;
 	
 	/** The ID of a black checker that is also a king. */
-	public static final int BLACK_KING = 0b111; //4 * 1 + 2 * 1 + 1 * 1;
+	public static final byte BLACK_KING = 0b111; //4 * 1 + 2 * 1 + 1 * 1 = 7;
 	
 	/** The ID of a white checker that is also a king. */
-	public static final int WHITE_KING = 0b101; //4 * 1 + 2 * 0 + 1 * 1;
+	public static final byte WHITE_KING = 0b101; //4 * 1 + 2 * 0 + 1 * 1 = 5;
 	
 	/** The current state of the board, represented as three integers. */
-	private int[] state;
+	private byte[] state;
 	
 	/**
 	 * Constructs a new checker game board, pre-filled with a new game state.
@@ -78,7 +69,7 @@ public class Board {
 	public void reset() {
 		
 		// Reset the state
-		this.state = new int[3];
+		this.state = new byte[32];
 		for (int i = 0; i < 12; i ++) {
 			set(i, BLACK_CHECKER);
 			set(31 - i, WHITE_CHECKER);
@@ -93,7 +84,7 @@ public class Board {
 	 * @return a list of points on the board with the specified ID. If none
 	 * exist, an empty list is returned.
 	 */
-	public List<Point> find(int id) {
+	public List<Point> find(byte id) {
 		
 		// Find all black tiles with matching IDs
 		List<Point> points = new ArrayList<>();
@@ -114,9 +105,9 @@ public class Board {
 	 * @param x		the x-coordinate on the board (from 0 to 7 inclusive).
 	 * @param y		the y-coordinate on the board (from 0 to 7 inclusive).
 	 * @param id	the new ID to set the black tile to.
-	 * @see  #set(int, int)
+	 * @see  #set(int, byte)
 	 */
-	public void set(int x, int y, int id) {
+	public void set(int x, int y, byte id) {
 		set(toIndex(x, y), id);
 	}
 	
@@ -127,9 +118,9 @@ public class Board {
 	 *
 	 * @param index	the index of the black tile (from 0 to 31 inclusive).
 	 * @param id	the new ID to set the black tile to.
-	 * @see #set(int, int, int)
+	 * @see #set(int, int, byte)
 	 */
-	public void set(int index, int id) {
+	public void set(int index, byte id) {
 		
 		// Out of range
 		if (!isValidIndex(index)) {
@@ -141,11 +132,8 @@ public class Board {
 			id = EMPTY;
 		}
 		
-		// Set the state bits
-		for (int i = 0; i < state.length; i ++) {
-			boolean set = ((1 << (state.length - i - 1)) & id) != 0;
-			this.state[i] = setBit(state[i], index, set);
-		}
+		// Set tile state
+		this.state[index] = id;
 	}
 	
 	/**
@@ -156,10 +144,10 @@ public class Board {
 	 * @return the ID at the specified location or {@link #INVALID} if the
 	 * location is not on the board or the location is a white tile.
 	 * @see #get(int)
-	 * @see #set(int, int)
-	 * @see #set(int, int, int)
+	 * @see #set(int, byte)
+	 * @see #set(int, int, byte)
 	 */
-	public int get(int x, int y) {
+	public byte get(int x, int y) {
 		return get(toIndex(x, y));
 	}
 	
@@ -170,15 +158,14 @@ public class Board {
 	 * @return the ID at the specified location or {@link #INVALID} if the
 	 * location is not on the board.
 	 * @see  #get(int, int)
-	 * @see #set(int, int)
-	 * @see #set(int, int, int)
+	 * @see #set(int, byte)
+	 * @see #set(int, int, byte)
 	 */
-	public int get(int index) {
+	public byte get(int index) {
 		if (!isValidIndex(index)) {
 			return INVALID;
 		}
-		return getBit(state[0], index) * 4 + getBit(state[1], index) * 2
-				+ getBit(state[2], index);
+		return state[index];
 	}
 	
 	/**
@@ -230,54 +217,6 @@ public class Board {
 	 */
 	public static int toIndex(Point p) {
 		return (p == null)? -1 : toIndex(p.x, p.y);
-	}
-	
-	/**
-	 * Sets or clears the specified bit in the target value and returns
-	 * the updated value.
-	 *
-	 * @param target	the target value to update.
-	 * @param bit		the bit to update (from 0 to 31 inclusive).
-	 * @param set        true to set  the bit, false to clear the bit.
-	 * @return the updated target value with the bit set or cleared.
-	 * @see #getBit(int, int)
-	 */
-	public static int setBit(int target, int bit, boolean set) {
-		
-		// Nothing to do
-		if (bit < 0 || bit > 31) {
-			return target;
-		}
-		
-		// Set the bit
-		if (set) {
-			target |= (1 << bit);
-		}
-		
-		// Clear the bit
-		else {
-			target &= (~(1 << bit));
-		}
-		
-		return target;
-	}
-	
-	/**
-	 * Gets the state of a bit and determines if it is set (1) or not (0).
-	 *
-	 * @param target	the target value to get the bit from.
-	 * @param bit		the bit to get (from 0 to 31 inclusive).
-	 * @return 1 if and only if the specified bit is set, 0 otherwise.
-	 * @see #setBit(int, int, boolean)
-	 */
-	public static int getBit(int target, int bit) {
-		
-		// Out of range
-		if (bit < 0 || bit > 31) {
-			return 0;
-		}
-		
-		return (target & (1 << bit)) != 0? 1 : 0;
 	}
 	
 	/**
