@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.dca.checkers"},{"l":"com.dca.checkers.ai"},{"l":"com.dca.checkers.model"},{"l":"com.dca.checkers.ui"}]
