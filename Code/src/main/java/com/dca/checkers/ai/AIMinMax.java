@@ -6,6 +6,7 @@ import com.dca.checkers.model.GameState;
 import com.dca.checkers.model.Move;
 import com.dca.checkers.model.Player;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,6 +109,7 @@ public class AIMinMax implements Player {
 			maxVal = Integer.MIN_VALUE;
 			//Get the available moves
 			List<Move> moves = g.getAllMoves();
+			Collections.shuffle(moves);
 			//Evaluate all games state reachable with each possible move
 			for (Move possibleMove : moves) {
 				GameState childState = g.copy();
