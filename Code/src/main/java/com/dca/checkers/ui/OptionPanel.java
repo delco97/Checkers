@@ -6,6 +6,7 @@
 
 package com.dca.checkers.ui;
 
+import com.dca.checkers.ai.AIAlphaBeta;
 import com.dca.checkers.ai.AIMinMax;
 import com.dca.checkers.ai.AIRandomPlayer;
 import com.dca.checkers.model.HumanPlayer;
@@ -94,7 +95,7 @@ public class OptionPanel extends JPanel {
 		this.window = window;
 		
 		// Initialize the components
-		final String[] playerTypeOpts = {"Human", "AI - Random", "AI - MinMax"};
+		final String[] playerTypeOpts = {"Human", "AI - Random", "AI - MinMax", "AI - AlphaBeta"};
 		this.sliderDelay = new JSlider(JSlider.HORIZONTAL, 0, 2000, 1000);
 		this.labelDelayValue = new JLabel(sliderDelay.getValue() + "");
 		this.btnStart = new JButton("Start");
@@ -222,7 +223,9 @@ public class OptionPanel extends JPanel {
 		if (type.equals("AI - MinMax")) {
 			player = new AIMinMax();
 		}
-		
+		if (type.equals("AI - AlphaBeta")) {
+			player = new AIAlphaBeta();
+		}
 		return player;
 	}
 	

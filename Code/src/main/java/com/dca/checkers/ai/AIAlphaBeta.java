@@ -1,4 +1,3 @@
-
 package com.dca.checkers.ai;
 
 import com.dca.checkers.model.Board;
@@ -6,29 +5,26 @@ import com.dca.checkers.model.GameState;
 import com.dca.checkers.model.Move;
 import com.dca.checkers.model.Player;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * The {@code AIRandomPlayer} class represents a AI player that updates
- * the board based on MinMax algorithm.
+ * The {@code AIAlphaBeta} class represents a AI player that updates
+ * the board based one alpha beta algorithm.
  */
-public class AIMinMax implements Player {
-	
-	/** Depth of the tree to build. */
-	private boolean isBlack;
-	
-	/**
-	 * Flag that tells if the move has been performed.
-	 */
-	private boolean moveDone;
+public class AIAlphaBeta implements Player {
 	
 	/**
 	 * Number of expanded nodes
 	 */
 	private static int expandedNodes = 0;
-	
+	/**
+	 * Depth of the tree to build.
+	 */
+	private boolean isBlack;
+	/**
+	 * Flag that tells if the move has been performed.
+	 */
+	private boolean moveDone;
 	/**
 	 * limit value for state value
 	 */
@@ -55,7 +51,7 @@ public class AIMinMax implements Player {
 		isBlack = gameState.isP1Turn();
 		expandedNodes = 0;
 		//Select best move
-		MinMaxResult bestResult = minMax(gameState.copy(), null, true, 0);
+		AlphaBetaResult bestResult = alphaBeta(gameState.copy(), null, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, true, 0);
 		//Apply best move
 		gameState.move(bestResult.move.getStartIndex(), bestResult.move.getEndIndex());
 		moveDone = true;
@@ -71,31 +67,23 @@ public class AIMinMax implements Player {
 		return moveDone;
 	}
 	
-	private class MinMaxResult {
-		Move move;
-		double value;
-		
-		public MinMaxResult(Move m, double v) {
-			move = m;
-			value = v;
-		}
-		
-	}
-	
 	/**
-	 * Execute min-max algorithm in order to find the best move.
+	 * Execute alpha beta algorithm in order to find the best move.
 	 *
-	 * @param g the game state to evaluate
+	 * @param g           the game state to evaluate.
+	 * @param m           the last move performed to reach game state g.
+	 * @param alpha       the current best outcome possible for maximizing player.
+	 * @param beta        the current best outcome possible for minimizing player.
 	 * @param isMaxPlayer flag that tells if the current player is max (true) or min (false)
-	 * @param depth the depth of the recursion.
+	 * @param depth       the depth of the recursion.
 	 * @return the result of min max algorithm.
 	 */
-	private MinMaxResult minMax(GameState g, Move m, boolean isMaxPlayer, int depth) {
+	private AlphaBetaResult alphaBeta(GameState g, Move m, double alpha, double beta, boolean isMaxPlayer, int depth) {
 		double val = eval(g.getBoard(), isBlack);
-		if (g.isGameOver()) return new MinMaxResult(m, val);
+		if (g.isGameOver()) return new AlphaBetaResult(m, val);
 		
 		val -= (double) depth / 1000;
-		if (expandedNodes >= limitSize || val < limitValue) return new MinMaxResult(m, val);
+		if (expandedNodes >= limitSize || val < limitValue) return new AlphaBetaResult(m, val);
 		
 		double maxVal;
 		double minVal;
@@ -104,7 +92,7 @@ public class AIMinMax implements Player {
 		
 		expandedNodes++;
 		
-		if(isMaxPlayer) {
+		if (isMaxPlayer) {
 			maxVal = Integer.MIN_VALUE;
 			//Get the available moves
 			List<Move> moves = g.getAllMoves();
@@ -112,14 +100,16 @@ public class AIMinMax implements Player {
 			for (Move possibleMove : moves) {
 				GameState childState = g.copy();
 				childState.move(possibleMove.getStartIndex(), possibleMove.getEndIndex());
-				MinMaxResult resChild = minMax(childState, possibleMove, false, depth + 1);
-				if(resChild.value > maxVal) {
+				AlphaBetaResult resChild = alphaBeta(childState, possibleMove, alpha, beta, false, depth - 1);
+				alpha = Math.max(alpha, resChild.value);
+				if (beta <= alpha) break;
+				if (resChild.value > maxVal) {
 					maxVal = resChild.value;
 					bestMove = possibleMove;
 					bestValue = resChild.value;
 				}
 			}
-			return new MinMaxResult(bestMove, bestValue);
+			return new AlphaBetaResult(bestMove, bestValue);
 			
 		} else {//Min player
 			minVal = Integer.MAX_VALUE;
@@ -129,14 +119,16 @@ public class AIMinMax implements Player {
 			for (Move possibleMove : moves) {
 				GameState childState = g.copy();
 				childState.move(possibleMove.getStartIndex(), possibleMove.getEndIndex());
-				MinMaxResult resChild = minMax(childState, possibleMove, true, depth + 1);
-				if(resChild.value < minVal) {
+				AlphaBetaResult resChild = alphaBeta(childState, possibleMove, alpha, beta, true, depth - 1);
+				beta = Math.min(beta, resChild.value);
+				if (beta <= alpha) break;
+				if (resChild.value < minVal) {
 					minVal = resChild.value;
 					bestMove = possibleMove;
 					bestValue = resChild.value;
 				}
 			}
-			return new MinMaxResult(bestMove, bestValue);
+			return new AlphaBetaResult(bestMove, bestValue);
 		}
 		
 		
@@ -175,4 +167,17 @@ public class AIMinMax implements Player {
 	public String toString() {
 		return getClass().getSimpleName() + "[isHuman=" + isHuman() + "]";
 	}
+	
+	private class AlphaBetaResult {
+		
+		Move move;
+		double value;
+		
+		public AlphaBetaResult(Move m, double v) {
+			move = m;
+			value = v;
+		}
+		
+	}
+	
 }
