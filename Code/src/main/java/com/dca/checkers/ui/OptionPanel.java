@@ -24,6 +24,11 @@ public class OptionPanel extends JPanel {
 	private static final long serialVersionUID = -4763875452164030755L;
 	
 	/**
+	 * The button that when clicked, start a simulation.
+	 */
+	private final JButton btnStartSimulation;
+	
+	/**
 	 * The button that when clicked, starts the game.
 	 */
 	public JButton btnStart;
@@ -104,6 +109,7 @@ public class OptionPanel extends JPanel {
 		this.btnRest = new JButton("Reset");
 		this.btnUndo = new JButton("Undo");
 		this.btnRedo = new JButton("Redo");
+		this.btnStartSimulation = new JButton("Start simulation");
 		this.cmbPlayer1Type = new JComboBox<>(playerTypeOpts);
 		this.cmbPlayer2Type = new JComboBox<>(playerTypeOpts);
 		this.chbTilesId = new JCheckBox("Show tiles IDs", true);
@@ -118,6 +124,13 @@ public class OptionPanel extends JPanel {
 		this.btnRest.addActionListener(e -> window.resetClick());
 		this.btnUndo.addActionListener(e -> window.undoMove());
 		this.btnRedo.addActionListener(e -> window.redoMove());
+		this.btnStartSimulation.addActionListener(e -> {
+			try {
+				window.startSimulation();
+			} catch (InterruptedException ex) {
+				ex.printStackTrace();
+			}
+		});
 		this.sliderDelay.addChangeListener(e -> {
 			labelDelayValue.setText(sliderDelay.getValue() + "");
 			window.setDelay(sliderDelay.getValue());
@@ -136,6 +149,7 @@ public class OptionPanel extends JPanel {
 		JPanel pan5 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel pan6 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		JPanel pan7 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		JPanel pan8 = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		
 		pan0.setBackground(new Color(214, 34, 28));
 		pan1.setBackground(new Color(231, 187, 134));
@@ -145,7 +159,7 @@ public class OptionPanel extends JPanel {
 		pan5.setBackground(new Color(231, 187, 134));
 		pan6.setBackground(new Color(231, 187, 134));
 		pan7.setBackground(new Color(231, 187, 134));
-		
+		pan8.setBackground(new Color(231, 187, 134));
 		
 		// Add components to the layout
 		JLabel txtDelay = new JLabel("AI Delay (ms): ");
@@ -174,11 +188,13 @@ public class OptionPanel extends JPanel {
 		pan5.add(chbTilesId);
 		pan6.add(chbShowMovablePieces);
 		pan7.add(chbShowNextMoves);
+		pan8.add(btnStartSimulation);
 		this.add(pan0);
 		this.add(pan1);
 		this.add(pan2);
 		this.add(pan3);
 		this.add(pan4);
+		this.add(pan8);
 		this.add(pan5);
 		this.add(pan6);
 		this.add(pan7);

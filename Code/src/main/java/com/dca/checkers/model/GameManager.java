@@ -4,6 +4,7 @@ import com.dca.checkers.ui.CheckerBoard;
 import com.dca.checkers.ui.OptionPanel;
 
 import java.awt.*;
+import java.lang.reflect.Array;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -16,9 +17,18 @@ import java.util.List;
 public class GameManager extends Thread {
 	
 	/**
+	 * Flag that tells if the current game is a simulation (true) or not (false). In other words, no UI update is
+	 * performed if this flag is set o false and data is collected using System.out.println.
+	 */
+	private final boolean isSimulation;
+	/**
 	 * Reference to thread instantiated for GameManager works.
 	 */
-	private Thread t;
+	public Thread t;
+	/**
+	 * Number of games to simulate between player 1 and player 2.
+	 */
+	private int numMatch;
 	
 	/**
 	 * The player in control of the black checkers.
@@ -102,19 +112,43 @@ public class GameManager extends Thread {
 		this.lastIndexValid = 0;
 		this.history = new ArrayList<>();
 		this.history.add(this.gameState.copy());
+		this.isSimulation = false;
+		this.numMatch = 0;
 		//Set UI
 		updateUI();
+	}
+	
+	public GameManager(int numMatch, Player p1, Player p2) {
+		this.gameState = new GameState();
+		this.player1 = p1;
+		this.player2 = p2;
+		this.boardUI = null;
+		this.opt = null;
+		this.isPaused = false;
+		this.isReadyToStart = false;
+		this.isOnGoing = true;
+		this.isOver = false;
+		this.curHistoryIndex = 0;
+		this.lastIndexValid = 0;
+		this.history = null;
+		this.isSimulation = true;
+		this.numMatch = numMatch;
 	}
 	
 	@Override
 	public void run() {
 		System.out.println("Running game manager thread");
 		
-		while (true) {
-			waitStart();
-			handleGameplay();
-			//setUIReadyToStart();
+		if (!isSimulation) { //Current game managed is not a simulation!
+			while (true) {
+				waitStart();
+				handleGameplay();
+				//setUIReadyToStart();
+			}
+		} else { //Current game managed is a simulation!
+			handleSimulation();
 		}
+		
 		
 	}
 	
@@ -124,6 +158,76 @@ public class GameManager extends Thread {
 			t = new Thread(this);
 			t.start();
 		}
+	}
+	
+	/**
+	 * Handle a simulation game (isSimulation = true).
+	 */
+	private void handleSimulation() {
+		int gameDone = 0;
+		Player currentPlayer;
+		long p1MoveAvg = 0, p1CntMoves = 0, p1Wins = 0;
+		long p2MoveAvg = 0, p2CntMoves = 0, p2Wins = 0;
+		long cntDraw = 0;
+		long startTimeSimulation = System.nanoTime();
+		while (gameDone < numMatch) {
+			gameDone++;
+			System.out.print("Game[Game:" + gameDone + "/" + numMatch + "]: ");
+			while (!gameState.isGameOver()) {
+				currentPlayer = getCurrentPlayer();
+				long startTime = System.nanoTime();
+				currentPlayer.updateGame(gameState);
+				long stopTime = System.nanoTime();
+				
+				if (gameState.isP1Turn()) {
+					p1CntMoves++;
+					p1MoveAvg += stopTime - startTime;
+				} else {
+					p2CntMoves++;
+					p2MoveAvg += stopTime - startTime;
+				}
+				
+			}
+			//Game over, do final report of the last game
+			String strResult = "";
+			MatchResult res = gameState.getResult();
+			switch (res) {
+				case P1_WIN:
+					strResult = "P1 WIN";
+					p1Wins++;
+					break;
+				case P2_WIN:
+					strResult = "P2 WIN";
+					p2Wins++;
+					break;
+				case DRAW:
+					strResult = "DRAW";
+					cntDraw++;
+					break;
+			}
+			System.out.println(strResult);
+			gameState.restart();
+		}
+		//Final report of all games
+		System.out.println("*** FINAL REPORT ***:");
+		System.out.println("Player 1: " + player1.getClass().getSimpleName());
+		System.out.println("Player 2: " + player2.getClass().getSimpleName());
+		System.out.println("Number of games simulated: " + numMatch);
+		System.out.println("Time required to simulate all the games: " + (System.nanoTime() - startTimeSimulation));
+		System.out.println("Draws: " + cntDraw);
+		System.out.println("== P1 ==");
+		System.out.println("  - Average time for a move: " + p1MoveAvg / p1CntMoves);
+		System.out.println("  - Total number of player moves: " + p1CntMoves);
+		System.out.println("  - Wins: " + p1Wins);
+		System.out.println("  - Defeats: " + p2Wins);
+		System.out.println("========");
+		
+		System.out.println("== P2 ==");
+		System.out.println("  - Average time for a move: " + p2MoveAvg / p2CntMoves);
+		System.out.println("  - Total number of player moves: " + p2CntMoves);
+		System.out.println("  - Wins: " + p2Wins);
+		System.out.println("  - Defeats: " + p1Wins);
+		System.out.println("========");
 	}
 	
 	/** Handle the game until it's over. */

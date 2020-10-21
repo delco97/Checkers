@@ -167,4 +167,17 @@ public class CheckersWindow extends JFrame {
 		gameManager.setDelay(value);
 	}
 	
+	
+	/**
+	 * Start a simulation.
+	 */
+	public void startSimulation() throws InterruptedException {
+		System.out.println("Start of simulation.\n");
+		GameManager gMan = new GameManager(50, opts.getPlayer1(), opts.getPlayer2());
+		gMan.start();
+		gMan.t.join();
+		System.out.println("End of simulation.\n");
+		
+	}
+	
 }
