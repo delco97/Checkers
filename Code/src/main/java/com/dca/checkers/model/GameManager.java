@@ -166,8 +166,8 @@ public class GameManager extends Thread {
 	private void handleSimulation() {
 		int gameDone = 0;
 		Player currentPlayer;
-		long p1MoveAvg = 0, p1CntMoves = 0, p1Wins = 0;
-		long p2MoveAvg = 0, p2CntMoves = 0, p2Wins = 0;
+		long p1MoveAvg = 0, p1CntMoves = 0, p1Wins = 0, p1DepthAvg = 0;
+		long p2MoveAvg = 0, p2CntMoves = 0, p2Wins = 0, p2DepthAvg = 0;
 		long cntDraw = 0;
 		long startTimeSimulation = System.nanoTime();
 		while (gameDone < numMatch) {
@@ -178,12 +178,13 @@ public class GameManager extends Thread {
 				long startTime = System.nanoTime();
 				currentPlayer.updateGame(gameState);
 				long stopTime = System.nanoTime();
-				
 				if (gameState.isP1Turn()) {
 					p1CntMoves++;
+					p1DepthAvg += currentPlayer.getLastMaxDepthReached();
 					p1MoveAvg += stopTime - startTime;
 				} else {
 					p2CntMoves++;
+					p2DepthAvg += currentPlayer.getLastMaxDepthReached();
 					p2MoveAvg += stopTime - startTime;
 				}
 				
@@ -217,6 +218,7 @@ public class GameManager extends Thread {
 		System.out.println("Draws: " + cntDraw);
 		System.out.println("== P1 ==");
 		System.out.println("  - Average time for a move: " + p1MoveAvg / p1CntMoves);
+		System.out.println("  - Average max depth for a move: " + p1DepthAvg / p1CntMoves);
 		System.out.println("  - Total number of player moves: " + p1CntMoves);
 		System.out.println("  - Wins: " + p1Wins);
 		System.out.println("  - Defeats: " + p2Wins);
@@ -224,6 +226,7 @@ public class GameManager extends Thread {
 		
 		System.out.println("== P2 ==");
 		System.out.println("  - Average time for a move: " + p2MoveAvg / p2CntMoves);
+		System.out.println("  - Average max depth for a move: " + p2DepthAvg / p2CntMoves);
 		System.out.println("  - Total number of player moves: " + p2CntMoves);
 		System.out.println("  - Wins: " + p2Wins);
 		System.out.println("  - Defeats: " + p1Wins);

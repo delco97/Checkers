@@ -16,6 +16,11 @@ public class AIRandomPlayer implements Player {
 	private boolean moveDone;
 	
 	@Override
+	public int getLastMaxDepthReached() {
+		return -1;
+	}
+	
+	@Override
 	public boolean isHuman() {
 		return false;
 	}

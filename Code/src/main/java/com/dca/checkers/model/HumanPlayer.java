@@ -21,6 +21,11 @@ public class HumanPlayer implements Player {
 	private boolean skipMove;
 	
 	@Override
+	public int getLastMaxDepthReached() {
+		return -1;
+	}
+	
+	@Override
 	public boolean isHuman() {
 		return true;
 	}

@@ -10,7 +10,10 @@ package com.dca.checkers.model;
  * game of checkers.
  */
 public interface Player {
-
+	
+	/** Get the last maximum depth reached during game state tree search*/
+	int getLastMaxDepthReached();
+	
 	/**
 	 * Determines how the game is updated. If true, the user must interact with
 	 * the user interface to make a move. Otherwise, the game is updated via

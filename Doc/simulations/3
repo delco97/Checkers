@@ -1,0 +1,19 @@
+Number of games simulated: 50
+Time required to simulate all the games: 1648308939762
+Draws: 5
+== AIAlphaBeta (first to move) ==
+  - Average time for a move: 559854633
+  - Average max depth for a move: 141
+  - Total number of player moves: 1750
+  - Wins: 40
+  - Defeats: 5
+========
+== AIMinMax ==
+  - Average time for a move: 377903304
+  - Average max depth for a move: 3
+  - Total number of player moves: 1769
+  - Wins: 5
+  - Defeats: 40
+========
+
+End of simulation.

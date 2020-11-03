@@ -1,0 +1,69 @@
+[Game:1/50]: P2 WIN
+[Game:2/50]: P2 WIN
+[Game:3/50]: P2 WIN
+[Game:4/50]: P2 WIN
+[Game:5/50]: P2 WIN
+[Game:6/50]: DRAW
+[Game:7/50]: P2 WIN
+[Game:8/50]: P2 WIN
+[Game:9/50]: P2 WIN
+[Game:10/50]: P2 WIN
+[Game:11/50]: P2 WIN
+[Game:12/50]: P2 WIN
+[Game:13/50]: P2 WIN
+[Game:14/50]: P2 WIN
+[Game:15/50]: P2 WIN
+[Game:16/50]: P2 WIN
+[Game:17/50]: P2 WIN
+[Game:18/50]: P2 WIN
+[Game:19/50]: DRAW
+[Game:20/50]: P2 WIN
+[Game:21/50]: P2 WIN
+[Game:22/50]: P2 WIN
+[Game:23/50]: P2 WIN
+[Game:24/50]: P2 WIN
+[Game:25/50]: P2 WIN
+[Game:26/50]: P2 WIN
+[Game:27/50]: P2 WIN
+[Game:28/50]: P2 WIN
+[Game:29/50]: P2 WIN
+[Game:30/50]: P2 WIN
+[Game:31/50]: P2 WIN
+[Game:32/50]: DRAW
+[Game:33/50]: P2 WIN
+[Game:34/50]: P2 WIN
+[Game:35/50]: P2 WIN
+[Game:36/50]: P1 WIN
+[Game:37/50]: P2 WIN
+[Game:38/50]: P2 WIN
+[Game:39/50]: P1 WIN
+[Game:40/50]: P2 WIN
+[Game:41/50]: P2 WIN
+[Game:42/50]: P2 WIN
+[Game:43/50]: P2 WIN
+[Game:44/50]: P2 WIN
+[Game:45/50]: P2 WIN
+[Game:46/50]: P1 WIN
+[Game:47/50]: P1 WIN
+[Game:48/50]: P2 WIN
+[Game:49/50]: P2 WIN
+[Game:50/50]: P2 WIN
+*** FINAL REPORT ***:
+Player 1: AIMinMax
+Player 2: AIAlphaBeta
+Number of games simulated: 50
+Time required to simulate all the games: 1621127263721
+Draws: 3
+== P1 ==
+  - Average time for a move: 469821272
+  - Total number of player moves: 1465
+  - Wins: 4
+  - Defeats: 43
+========
+== P2 ==
+  - Average time for a move: 647755943
+  - Total number of player moves: 1440
+  - Wins: 43
+  - Defeats: 4
+========
+End of simulation.

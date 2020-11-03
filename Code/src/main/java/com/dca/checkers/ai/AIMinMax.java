@@ -40,6 +40,14 @@ public class AIMinMax implements Player {
 	 */
 	private int limitSize = 100000;
 	
+	/** The max depth reached with last updateGame execution */
+	private int maxDepthReached;
+	
+	@Override
+	public int getLastMaxDepthReached() {
+		return maxDepthReached;
+	}
+	
 	@Override
 	public boolean isHuman() {
 		return false;
@@ -48,6 +56,7 @@ public class AIMinMax implements Player {
 	@Override
 	synchronized public void updateGame(GameState gameState) {
 		moveDone = false;
+		maxDepthReached = -1;
 		// Nothing to do
 		if (gameState == null || gameState.isGameOver()) {
 			moveDone = true;
@@ -93,6 +102,7 @@ public class AIMinMax implements Player {
 	 */
 	private MinMaxResult minMax(GameState g, Move m, boolean isMaxPlayer, int depth) {
 		double val = eval(g.getBoard(), isBlack);
+		maxDepthReached = Math.max(depth, maxDepthReached);
 		if (g.isGameOver()) return new MinMaxResult(m, val);
 		
 		val -= (double) depth / 1000;
